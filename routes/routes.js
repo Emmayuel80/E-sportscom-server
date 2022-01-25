@@ -178,7 +178,13 @@ router.put("/updatePassword", authorize(), (req, res) => {
     });
 });
 
-router.post("/verifyToken", authorize(), (req, res) => {
+router.post("/jugador/verifyToken", authorize("jugador"), (req, res) => {
+  res.json({
+    error: false,
+    message: "Token valido!",
+  });
+});
+router.post("/organizador/verifyToken", authorize("organizador"), (req, res) => {
   res.json({
     error: false,
     message: "Token valido!",
