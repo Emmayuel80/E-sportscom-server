@@ -1,6 +1,6 @@
 const dbConn = require("../config/database");
 const bcrypt = require("bcrypt");
-const saltRounds = 10;
+const saltRounds = 5;
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
 // Usuario object create
