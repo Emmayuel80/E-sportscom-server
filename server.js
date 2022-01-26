@@ -1,6 +1,17 @@
 const express = require("express");
+const http = require("http");
+const https = require("https");
+const fs = require("fs");
 const app = express();
-const PORT = process.env.PORT || 8000;
+
+// SSL
+const privateKey = fs.readFileSync("./ssl/certificate.key", "UTF8");
+const certificate = fs.readFileSync("./ssl/certificate.crt", "UTF8");
+const credentials = {
+  key: privateKey,
+  cert: certificate,
+};
+
 // const routes = require("./routes/routes");
 const logger = require("morgan");
 const cors = require("cors");
@@ -28,6 +39,7 @@ const errorResponder = (err, req, res, next) => {
   res.status(err.status).send(JSON.stringify({ ...err, error: true }, null, 4)); // pretty print
 };
 app.use(errorResponder);
-app.listen(PORT, function () {
-  console.log("listening on port: " + PORT);
-});
+const httpServer = http.createServer(app);
+const httpsServer = https.createServer(credentials, app);
+httpServer.listen(8080);
+httpsServer.listen(8443);
