@@ -51,7 +51,7 @@ router.post("/forgotPassword", (req, res) => {
           id: usuario[0].id_usuario,
         };
         const token = jwt.sign(payload, JWTSecret, { expiresIn: "1h" });
-        const link = `${process.env.HTTP}://${process.env.HOST}:${process.env.PORT}/resetPassword/${usuario[0].id_usuario}/${token}`;
+        const link = `https://pwa-esports.herokuapp.com/resetPassword/${usuario[0].id_usuario}/${token}`;
         // send email with link
         try {
           require("../services/sendPasswordLink.js")(
@@ -184,12 +184,16 @@ router.post("/jugador/verifyToken", authorize("jugador"), (req, res) => {
     message: "Token valido!",
   });
 });
-router.post("/organizador/verifyToken", authorize("organizador"), (req, res) => {
-  res.json({
-    error: false,
-    message: "Token valido!",
-  });
-});
+router.post(
+  "/organizador/verifyToken",
+  authorize("organizador"),
+  (req, res) => {
+    res.json({
+      error: false,
+      message: "Token valido!",
+    });
+  }
+);
 
 router.post("/verifyEmail/:id/:token", (req, res) => {
   const { id, token } = req.params;

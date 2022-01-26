@@ -42,7 +42,7 @@ Usuario.create = async function (newUsuario) {
           id: fields.insertId,
         };
         const token = jwt.sign(payload, JWTSecret, { expiresIn: "7d" });
-        const link = `${process.env.HTTP}://${process.env.HOST}:${process.env.PORT}/verifyEmail/${fields.insertId}/${token}`;
+        const link = `https://pwa-esports.herokuapp.com/verifyEmail/${fields.insertId}/${token}`;
         // send email with link
         require("../services/sendEmailLink.js")(
           newUsuario.email,
