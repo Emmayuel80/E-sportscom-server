@@ -17,7 +17,7 @@ router.post("/register", (req, res) => {
         res.json({ error: false, message: "Usuario añadido!", data: usuario });
       })
       .catch((err) => {
-        res.status(400).send({ error: err, message: "Error al crear usuario" });
+        res.status(500).send({ error: err, message: "Error al crear usuario" });
       });
   }
 });
