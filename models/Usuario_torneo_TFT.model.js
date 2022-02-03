@@ -4,6 +4,7 @@ const UsuarioTorneoTFT = function (usuario) {
   this.id_usuario = usuario.id_usuario;
   this.id_torneo = usuario.id_torneo;
   this.ganado = usuario.ganado;
+  this.is_organizador = usuario.is_organizador;
 };
 
 // Crud

@@ -14,4 +14,18 @@ Organizador.getDashboardData = async function (idUsuario) {
   return data;
 };
 
+// edit a tournament and notify the teams about the changes via email
+Organizador.editTorneo = async function (idTorneo, idUsuario, data) {
+  const torneo = await Torneos.getTorneoCreado(idTorneo, idUsuario);
+  if (torneo.id_estado > 0) {
+    throw new Error("El torneo no se encuentra en estado de edición");
+  }
+  if (typeof "" === typeof data.fecha_fin_registro) {
+    data.fecha_fin_registro = new Date(data.fecha_fin_registro);
+  }
+  if (typeof "" === typeof data.fecha_inicio) {
+    data.fecha_inicio = new Date(data.fecha_inicio);
+  }
+  await Torneos.update(idTorneo, data, torneo, idUsuario);
+};
 module.exports = Organizador;

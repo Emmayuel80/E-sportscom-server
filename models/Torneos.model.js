@@ -12,6 +12,7 @@ const Torneos = function (torneo) {
   this.premio = torneo.premio;
   this.desc_premio = torneo.desc_premio;
   this.id_estado = 0;
+  this.description = torneo.description;
   this.id_etapa_actual = Torneos.calculateEtapaActual(
     torneo.id_juego,
     torneo.no_equipos,
@@ -60,26 +61,26 @@ Torneos.create = function (torneo, idUsuario) {
       .query("INSERT INTO torneos SET ?", torneo)
       .then(([fields, rows]) => {
         // Inserta el torneo en la tabla de usuarios torneos
-        console.log("antes de crear el usuario");
-        console.log(fields);
         const newUsuarioTorneoTFT = new UsuarioTorneoTFT({
           id_torneo: fields.insertId,
           id_usuario: idUsuario,
           ganado: false,
         });
-        console.log("Se creo el usuario");
-        UsuarioTorneoTFT.create(newUsuarioTorneoTFT);
+        UsuarioTorneoTFT.create({
+          ...newUsuarioTorneoTFT,
+          is_organizador: true,
+        }).catch((err) => {
+          reject(err);
+        });
         return fields.insertId;
       })
       .then((idTorneo) => {
         // Inserta la creacion en la bitacora
-        console.log(idUsuario);
         const newBitacoraTorneo = new BitacoraTorneo({
           id_torneo: idTorneo,
           id_usuario: idUsuario,
           desc_modificacion: "Se creó el torneo: " + torneo.nombre,
         });
-        console.log("Se creo la bitacora");
         BitacoraTorneo.create(newBitacoraTorneo);
         resolve({ msg: "Se creó el torneo" });
       })
@@ -105,15 +106,32 @@ Torneos.getAll = function () {
 };
 
 // update
-Torneos.update = function (torneo) {
+Torneos.update = function (idTorneo, torneo, oldTorneo, idUsuario) {
+  const changesString = require("../services/showTournamentDiff")(
+    torneo,
+    oldTorneo
+  );
+  if (changesString.length <= 0) {
+    throw new Error("No se han detectado cambios");
+  }
   return new Promise((resolve, reject) => {
     dbConn
       .promise()
-      .query("UPDATE torneos SET ? WHERE id_torneo = ?", [
-        torneo,
-        torneo.id_torneo,
-      ])
-      .then(([fields, rows]) => {
+      .query("UPDATE torneos SET ? WHERE id_torneo = ?", [torneo, idTorneo])
+      .then(async ([fields, rows]) => {
+        // Create a string that contains the changes
+
+        // Inserta la creacion en la bitacora
+        const newBitacoraTorneo = new BitacoraTorneo({
+          id_torneo: idTorneo,
+          id_usuario: idUsuario,
+          desc_modificacion:
+            "Se modifico el torneo: " +
+            oldTorneo.nombre +
+            " \nCambios realizados: " +
+            changesString,
+        });
+        await BitacoraTorneo.create(newBitacoraTorneo);
         resolve(fields);
       })
       .catch((err) => {
@@ -155,6 +173,28 @@ Torneos.getTorneosCreados = function (idUsuario) {
   });
 };
 
+Torneos.getTorneoCreado = function (idTorneo, idUsuario) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `select torneos.* from torneos 
+        inner join usuario_torneo_TFT on torneos.id_torneo=usuario_torneo_TFT.id_torneo 
+        where usuario_torneo_TFT.id_torneo=? and usuario_torneo_TFT.id_usuario=?`,
+        [idTorneo, idUsuario]
+      )
+      .then(([fields, rows]) => {
+        if (fields.length > 0) {
+          resolve(fields[0]);
+        } else {
+          reject(new Error("No se encontró el torneo").toString());
+        }
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
 // get latest created tournament by user
 Torneos.getLatestTorneoCreado = function (idUsuario) {
   return new Promise((resolve, reject) => {

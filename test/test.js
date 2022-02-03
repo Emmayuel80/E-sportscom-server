@@ -1,9 +1,8 @@
 /* eslint-disable no-undef */
-// Sample test
-function sum(a, b) {
-  return a + b;
-}
+require("dotenv").config();
 
-test("adds 1 + 2 to equal 3", () => {
-  expect(sum(1, 2)).toBe(3);
+test("Debe regresar el torneo 11 si fue creado por el organizador 17", async () => {
+  const Torneos = require("../models/Torneos.model");
+  const torneo = await Torneos.getTorneoCreado(11, 17);
+  expect(torneo.id_torneo).toBe(11);
 });
