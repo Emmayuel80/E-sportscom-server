@@ -54,6 +54,12 @@ Torneos.generateCode = function (nombreTorneo) {
 // CRUD
 // create
 Torneos.create = function (torneo, idUsuario) {
+  if (typeof "" === typeof torneo.fecha_fin_registro) {
+    torneo.fecha_fin_registro = new Date(torneo.fecha_fin_registro);
+  }
+  if (typeof "" === typeof torneo.fecha_inicio) {
+    torneo.fecha_inicio = new Date(torneo.fecha_inicio);
+  }
   return new Promise((resolve, reject) => {
     // Crea el torneo
     dbConn
@@ -132,7 +138,6 @@ Torneos.update = function (idTorneo, torneo, oldTorneo, idUsuario) {
             changesString,
         });
         await BitacoraTorneo.create(newBitacoraTorneo);
-        // TODO: Enviar correo de notificacion a los usuarios
         resolve(fields);
       })
       .catch((err) => {
