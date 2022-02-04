@@ -132,6 +132,7 @@ Torneos.update = function (idTorneo, torneo, oldTorneo, idUsuario) {
             changesString,
         });
         await BitacoraTorneo.create(newBitacoraTorneo);
+        // TODO: Enviar correo de notificacion a los usuarios
         resolve(fields);
       })
       .catch((err) => {
@@ -221,6 +222,68 @@ Torneos.getTorneosActivos = function (idUsuario) {
       .query(
         "select torneos.* from torneos inner join usuario_torneo_TFT on torneos.id_torneo=usuario_torneo_TFT.id_torneo where usuario_torneo_TFT.id_usuario=? and torneos.id_estado != 5 and torneos.id_estado != 7",
         [idUsuario]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+// Cancel
+Torneos.cancel = function (idTorneo, idUsuario, torneo) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "UPDATE torneos SET `id_estado` = '5' WHERE (`id_torneo` = ?);",
+        idTorneo
+      )
+      .then(async ([fields, rows]) => {
+        // Inserta la creacion en la bitacora
+        const newBitacoraTorneo = new BitacoraTorneo({
+          id_torneo: idTorneo,
+          id_usuario: idUsuario,
+          desc_modificacion: "Se cancelo el torneo: " + torneo.nombre,
+        });
+        await BitacoraTorneo.create(newBitacoraTorneo);
+        // TODO: Enviar correo de cancelacion a los usuarios
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+Torneos.getTotalTorneos = function (idUsuario) {
+  // get number of tournaments created by usuario tft
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select count(*) as numero from torneos inner join usuario_torneo_TFT on torneos.id_torneo=usuario_torneo_TFT.id_torneo where usuario_torneo_TFT.id_usuario=?",
+        [idUsuario]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields[0].numero);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+Torneos.getRangeOfTorneos = function (idUsuario, start, number) {
+  // get tournaments created by usuario tft
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select torneos.* from torneos inner join usuario_torneo_TFT on torneos.id_torneo=usuario_torneo_TFT.id_torneo where usuario_torneo_TFT.id_usuario=? ORDER BY fecha_creacion DESC LIMIT ?, ?",
+        [idUsuario, Number(start), Number(number)]
       )
       .then(([fields, rows]) => {
         resolve(fields);

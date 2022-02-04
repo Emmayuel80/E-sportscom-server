@@ -29,3 +29,27 @@ Organizador.editTorneo = async function (idTorneo, idUsuario, data) {
   await Torneos.update(idTorneo, data, torneo, idUsuario);
 };
 module.exports = Organizador;
+
+// Cancel a tournament and notify the teams about the changes via email
+Organizador.cancelTorneo = async function (idTorneo, idUsuario) {
+  const torneo = await Torneos.getTorneoCreado(idTorneo, idUsuario);
+  if (torneo.id_estado > 3) {
+    throw new Error("El torneo no se puede cancelar");
+  }
+  await Torneos.cancel(idTorneo, idUsuario, torneo);
+};
+
+// get the list of tournaments created by the user on range
+Organizador.getTorneosCreados = async function (idUsuario, start, end) {
+  const torneos = await Torneos.getRangeOfTorneos(idUsuario, start, end);
+  const total = await Torneos.getTotalTorneos(idUsuario);
+  const data = {
+    torneos: torneos,
+    total: total,
+  };
+  if (data.torneos.length <= 0) {
+    throw new Error("No se encontraron torneos creados");
+  } else return data;
+};
+
+module.exports = Organizador;

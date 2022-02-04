@@ -133,7 +133,7 @@ Usuario.authenticate = function ({ email, password }) {
               if (check) {
                 if (fields[0].is_active) {
                   const token = jwt.sign(
-                    { sub: fields[0].id_usuario },
+                    { sub: fields[0].id_usuario, password: fields[0].password },
                     config.secret,
                     {
                       expiresIn: "7d",

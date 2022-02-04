@@ -47,4 +47,50 @@ router.put(
   }
 );
 
+// update a tournament
+router.put(
+  "/cancelTournament/:idTorneo",
+  authorize("organizador"),
+  async (req, res) => {
+    const { idTorneo } = req.params;
+    // check if the tournament belongs to the user
+    try {
+      await Organizador.cancelTorneo(idTorneo, req.user.sub);
+      res.status(200).json({ msg: "Tornament cancel" });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ msg: "Error al cancelar el torneo", err: error.toString() });
+    }
+  }
+);
+
+// get all tournaments of the user by range
+router.get(
+  "/tournaments/:start/:number",
+  authorize("organizador"),
+  async (req, res) => {
+    const { start, number } = req.params;
+    try {
+      const data = await Organizador.getTorneosCreados(
+        req.user.sub,
+        start,
+        number
+      );
+      if (data.error) {
+        res.status(500).json({
+          message: "Error al obtener los torneos",
+          error: data.error,
+        });
+      } else {
+        res.status(200).json(data);
+      }
+    } catch (err) {
+      res
+        .status(500)
+        .json({ msg: "Error al obtener los torneos", err: err.toString() });
+    }
+  }
+);
+
 module.exports = router;
