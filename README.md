@@ -38,6 +38,7 @@ HOST= -> Dominio web
 PORT= -> Puerto
 SSL_KEY= -> Ubicacion de la llave SSL
 SSL_CERTIFICATE= -> Ubicacion del certificado SSL
+LEAGUE_API_KEY= -> Llave de la API de League
 ```
 
 ## Ejecutando las pruebas ⚙️
