@@ -137,12 +137,10 @@ router.get(
         res.status(200).json(data);
       }
     } catch (err) {
-      res
-        .status(500)
-        .json({
-          msg: "Error al obtener los datos del torneo",
-          err: err.toString(),
-        });
+      res.status(500).json({
+        msg: "Error al obtener los datos del torneo",
+        err: err.toString(),
+      });
     }
   }
 );
