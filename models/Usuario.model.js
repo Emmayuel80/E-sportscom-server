@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const saltRounds = 5;
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
+const leagueJS = require("../config/riotApi");
 // Usuario object create
 const Usuario = function (usuario) {
   this.nombre = usuario.username;
@@ -103,12 +104,16 @@ Usuario.findAll = function () {
 // Permite editar el perfil del usuario (jugador o organizador)
 Usuario.updateProfile = function (id, request) {
   return new Promise((resolve, reject) => {
-    dbConn
-      .promise()
-      .query(
-        "UPDATE usuarios set nombre = ?, nombre_invocador=?, image=? WHERE id_usuario=?",
-        [request.nombre, request.nombre_invocador, request.image, id]
-      )
+    leagueJS.Summoner.gettingByName(request.nombre_invocador)
+      .then((summoner) => {
+        request.image = `https://cdn.communitydragon.org/12.3.1/profile-icon/${summoner.profileIconId}`;
+        return dbConn
+          .promise()
+          .query(
+            "UPDATE usuarios set nombre = ?, nombre_invocador=?, image=? WHERE id_usuario=?",
+            [request.nombre, request.nombre_invocador, request.image, id]
+          );
+      })
       .then(([fields, rows]) => {
         resolve({ message: "Perfil actualizado", fields });
       })
@@ -133,7 +138,7 @@ Usuario.authenticate = function ({ email, password }) {
               if (check) {
                 if (fields[0].is_active) {
                   const token = jwt.sign(
-                    { sub: fields[0].id_usuario },
+                    { sub: fields[0].id_usuario, password: fields[0].password },
                     config.secret,
                     {
                       expiresIn: "7d",
@@ -187,6 +192,28 @@ Usuario.updateIsActive = function (id, isActive) {
       ])
       .then(([fields, rows]) => {
         resolve({ message: "Estado actualizado", usuario: fields });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+// Permite actualizar la foto de perfil del usuario (jugador o organizador)
+Usuario.updateProfileImage = function (nombreInvocador, idUsuario) {
+  return new Promise((resolve, reject) => {
+    leagueJS.Summoner.gettingByName(nombreInvocador)
+      .then((summoner) => {
+        const image = `https://cdn.communitydragon.org/12.3.1/profile-icon/${summoner.profileIconId}`;
+        return dbConn
+          .promise()
+          .query("UPDATE usuarios set image=? WHERE id_usuario=?", [
+            image,
+            idUsuario,
+          ]);
+      })
+      .then(([fields, rows]) => {
+        resolve({ message: "Foto de Perfil actualizada", fields });
       })
       .catch((err) => {
         reject(err);

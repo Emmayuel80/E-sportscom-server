@@ -14,6 +14,11 @@ function authorize(tipo = "general") {
       // get user with id from token 'sub' (subject) property
       Usuario.findById(req.user.sub)
         .then((usuario) => {
+          if (usuario[0].password !== req.user.password) {
+            return res.status(401).send({
+              error: "Usuario o contraseña incorrectos",
+            });
+          }
           if (tipo === "general") {
             req.usuario = usuario;
             next();

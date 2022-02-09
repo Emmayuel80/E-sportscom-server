@@ -17,7 +17,7 @@ router.post("/register", (req, res) => {
         res.json({ error: false, message: "Usuario añadido!", data: usuario });
       })
       .catch((err) => {
-        res.status(400).send({ error: err, message: "Error al crear usuario" });
+        res.status(500).send({ error: err, message: "Error al crear usuario" });
       });
   }
 });
@@ -223,4 +223,25 @@ router.post("/verifyEmail/:id/:token", (req, res) => {
       res.status(400).send(err);
     });
 });
+
+router.put("/editProfileImage", authorize(), (req, res) => {
+  Usuario.updateProfileImage(req.body.nombre_invocador, req.user.sub)
+    .then((result) => {
+      Usuario.findById(req.user.sub)
+        .then((usuario) => {
+          res.json({
+            error: false,
+            message: "Usuario actualizado!",
+            data: usuario,
+          });
+        })
+        .catch((err) => {
+          res.status(400).send(err);
+        });
+    })
+    .catch((err) => {
+      res.status(400).send(err);
+    });
+});
+
 module.exports = router;

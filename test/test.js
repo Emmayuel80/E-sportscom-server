@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-// Sample test
 function sum(a, b) {
   return a + b;
 }

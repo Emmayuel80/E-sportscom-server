@@ -3,20 +3,19 @@ const http = require("http");
 const https = require("https");
 const fs = require("fs");
 const app = express();
-
-// SSL
-const privateKey = fs.readFileSync("./ssl/certificate.key", "UTF8");
-const certificate = fs.readFileSync("./ssl/certificate.crt", "UTF8");
-const credentials = {
-  key: privateKey,
-  cert: certificate,
-};
-
 // const routes = require("./routes/routes");
 const logger = require("morgan");
 const cors = require("cors");
 const path = require("path");
 require("dotenv").config();
+
+// SSL
+const privateKey = fs.readFileSync(process.env.SSL_KEY, "UTF8");
+const certificate = fs.readFileSync(process.env.SSL_CERTIFICATE, "UTF8");
+const credentials = {
+  key: privateKey,
+  cert: certificate,
+};
 
 // CONFIG
 app.use(cors());
@@ -27,6 +26,8 @@ app.use(logger("dev"));
 // ROUTES
 const routes = require("./routes/routes");
 app.use("/api", routes);
+const organizador = require("./routes/organizadorRoutes");
+app.use("/api/organizador", organizador);
 
 // MIDDLEWARE
 app.use(express.static(path.join(__dirname, "../client", "build")));
