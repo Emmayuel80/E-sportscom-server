@@ -1,14 +1,8 @@
 /* eslint-disable no-undef */
-require("dotenv").config();
+function sum(a, b) {
+  return a + b;
+}
 
-test("Debe regresar el torneo 11 si fue creado por el organizador 17", async () => {
-  const Torneos = require("../models/Torneos.model");
-  const torneo = await Torneos.getTorneoCreado(11, 17);
-  expect(torneo.id_torneo).toBe(11);
-});
-
-test("Debe regresar el total de torneos del organizador 17", async () => {
-  const Torneos = require("../models/Torneos.model");
-  const torneos = await Torneos.getTotalTorneos(17);
-  expect(torneos).toEqual(expect.any(Number));
+test("adds 1 + 2 to equal 3", () => {
+  expect(sum(1, 2)).toBe(3);
 });
