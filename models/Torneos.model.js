@@ -137,20 +137,23 @@ Torneos.update = function (idTorneo, torneo, oldTorneo, idUsuario) {
             " \nCambios realizados: " +
             changesString,
         });
+        let mails;
         // send mail to participants
         if (oldTorneo.id_juego === 1) {
           // LoL
+          mails = await Torneos.getInfoEquipos(idTorneo);
         } else if (oldTorneo.id_juego === 2) {
           // TFT
-          const mails = await UsuarioTorneoTFT.getEmailJugadoresTorneo(
-            idTorneo
-          );
-          console.log("Enviando correos a: ", mails);
+          mails = await UsuarioTorneoTFT.getEmailJugadoresTorneo(idTorneo);
+        }
+        try {
           require("../services/sendUpdateTournamentMail")(
             mails,
             oldTorneo.nombre,
             changesString.replace(/\n/g, "<br>")
           );
+        } catch (err) {
+          reject(new Error("Error al enviar correos").toString());
         }
         await BitacoraTorneo.create(newBitacoraTorneo);
         resolve(fields);
@@ -319,7 +322,7 @@ Torneos.getInfoEquipos = function (idTorneo) {
     dbConn
       .promise()
       .query(
-        "select j.nombre, j.nombre_invocador, et.posicion, e.nombre as equipo from usuarios as j, usuario_equipo as ue, equipos as e, equipo_torneo as et, torneos as t where t.id_torneo=? and t.id_torneo=et.id_torneo and et.id_equipo=e.id_equipo and e.id_equipo=ue.id_equipo and ue.id_usuario=j.id_usuario;",
+        "select j.email, j.nombre, j.nombre_invocador, et.posicion, e.nombre as equipo from usuarios as j, usuario_equipo as ue, equipos as e, equipo_torneo as et, torneos as t where t.id_torneo=? and t.id_torneo=et.id_torneo and et.id_equipo=e.id_equipo and e.id_equipo=ue.id_equipo and ue.id_usuario=j.id_usuario;",
         idTorneo
       )
       .then(([fields, rows]) => {
