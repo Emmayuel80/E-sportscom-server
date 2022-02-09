@@ -32,7 +32,8 @@ UsuarioTorneoTFT.getJugadoresTorneo = (idTorneo) => {
         u.puntaje_jugador,
         u.no_enfrentamientos_jugados,
         u.total_damage,
-        u.posicion
+        u.posicion,
+        u.ganado
  FROM   usuarios AS j,
         usuario_torneo_tft AS u
  WHERE  j.id_usuario = u.id_usuario
@@ -42,6 +43,23 @@ UsuarioTorneoTFT.getJugadoresTorneo = (idTorneo) => {
       )
       .then((res) => {
         resolve(res);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+UsuarioTorneoTFT.getEmailJugadoresTorneo = (idTorneo) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select u.email from usuarios as u, usuario_torneo_TFT as ut, torneos as t where t.id_torneo=? and t.id_torneo=ut.id_torneo and ut.id_usuario=u.id_usuario;",
+        idTorneo
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
       })
       .catch((err) => {
         reject(err);

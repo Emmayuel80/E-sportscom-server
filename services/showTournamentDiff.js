@@ -5,21 +5,19 @@ module.exports = function (torneo, oldTorneo) {
       "Nombre: " + oldTorneo.nombre + " -> " + torneo.nombre + ";\n ";
   }
   if (`${torneo.fecha_fin_registro}` !== `${oldTorneo.fecha_fin_registro}`) {
-    console.log(torneo.fecha_fin_registro);
-    console.log(oldTorneo.fecha_fin_registro);
     descModificacion +=
       "Fecha fin registro: " +
-      oldTorneo.fecha_fin_registro +
+      oldTorneo.fecha_fin_registro.toDateString() +
       " -> " +
-      torneo.fecha_fin_registro +
+      torneo.fecha_fin_registro.toDateString() +
       ";\n ";
   }
   if (`${torneo.fecha_inicio}` !== `${oldTorneo.fecha_inicio}`) {
     descModificacion +=
       "Fecha inicio: " +
-      oldTorneo.fecha_inicio +
+      oldTorneo.fecha_inicio.toDateString() +
       " -> " +
-      torneo.fecha_inicio +
+      torneo.fecha_inicio.toDateString() +
       ";\n ";
   }
   // eslint-disable-next-line eqeqeq

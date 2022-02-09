@@ -137,6 +137,21 @@ Torneos.update = function (idTorneo, torneo, oldTorneo, idUsuario) {
             " \nCambios realizados: " +
             changesString,
         });
+        // send mail to participants
+        if (oldTorneo.id_juego === 1) {
+          // LoL
+        } else if (oldTorneo.id_juego === 2) {
+          // TFT
+          const mails = await UsuarioTorneoTFT.getEmailJugadoresTorneo(
+            idTorneo
+          );
+          console.log("Enviando correos a: ", mails);
+          require("../services/sendUpdateTournamentMail")(
+            mails,
+            oldTorneo.nombre,
+            changesString.replace(/\n/g, "<br>")
+          );
+        }
         await BitacoraTorneo.create(newBitacoraTorneo);
         resolve(fields);
       })
@@ -225,7 +240,7 @@ Torneos.getTorneosActivos = function (idUsuario) {
     dbConn
       .promise()
       .query(
-        "select torneos.* from torneos inner join usuario_torneo_TFT on torneos.id_torneo=usuario_torneo_TFT.id_torneo where usuario_torneo_TFT.id_usuario=? and torneos.id_estado != 5 and torneos.id_estado != 7",
+        "select torneos.* from torneos inner join usuario_torneo_TFT on torneos.id_torneo=usuario_torneo_TFT.id_torneo where usuario_torneo_TFT.id_usuario=? and torneos.id_estado != 5 and torneos.id_estado != 4",
         [idUsuario]
       )
       .then(([fields, rows]) => {
@@ -289,6 +304,23 @@ Torneos.getRangeOfTorneos = function (idUsuario, start, number) {
       .query(
         "select torneos.* from torneos inner join usuario_torneo_TFT on torneos.id_torneo=usuario_torneo_TFT.id_torneo where usuario_torneo_TFT.id_usuario=? ORDER BY fecha_creacion DESC LIMIT ?, ?",
         [idUsuario, Number(start), Number(number)]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+Torneos.getInfoEquipos = function (idTorneo) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select j.nombre, j.nombre_invocador, et.posicion, e.nombre as equipo from usuarios as j, usuario_equipo as ue, equipos as e, equipo_torneo as et, torneos as t where t.id_torneo=? and t.id_torneo=et.id_torneo and et.id_equipo=e.id_equipo and e.id_equipo=ue.id_equipo and ue.id_usuario=j.id_usuario;",
+        idTorneo
       )
       .then(([fields, rows]) => {
         resolve(fields);

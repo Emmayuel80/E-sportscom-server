@@ -17,15 +17,22 @@ router.get("/dashboardData", authorize("organizador"), async (req, res) => {
 });
 
 // create a tournament
-router.post("/createTournament", authorize("organizador"), (req, res) => {
+router.post("/createTournament", authorize("organizador"), async (req, res) => {
   const newTornament = new Torneos(req.body);
-  Torneos.create(newTornament, req.user.sub)
-    .then((data) => {
-      res.status(200).json({ msg: "Tornament created" });
-    })
-    .catch((err) => {
-      res.status(500).json({ msg: "Error al crear el torneo", err: err });
-    });
+  const activeTournaments = await Organizador.getActiveTournament(req.user.sub);
+  if (activeTournaments.length > 5) {
+    res
+      .status(422)
+      .json({ msg: "Solo se pueden tener un maximo de 5 torneos activos" });
+  } else {
+    Torneos.create(newTornament, req.user.sub)
+      .then((data) => {
+        res.status(200).json({ msg: "Tornament created" });
+      })
+      .catch((err) => {
+        res.status(500).json({ msg: "Error al crear el torneo", err: err });
+      });
+  }
 });
 
 // update a tournament
@@ -89,6 +96,53 @@ router.get(
       res
         .status(500)
         .json({ msg: "Error al obtener los torneos", err: err.toString() });
+    }
+  }
+);
+
+// get all active tournaments
+router.get("/activeTournaments", authorize("organizador"), async (req, res) => {
+  try {
+    const data = await Organizador.getActiveTournament(req.user.sub);
+    if (data.error) {
+      res.status(500).json({
+        message: "Error al obtener los torneos activos",
+        error: data.error,
+      });
+    } else {
+      res.status(200).json(data);
+    }
+  } catch (err) {
+    res.status(500).json({
+      msg: "Error al obtener los torneos activos",
+      err: err.toString(),
+    });
+  }
+});
+
+// get tournament data
+router.get(
+  "/tournamentData/:idTorneo",
+  authorize("organizador"),
+  async (req, res) => {
+    const { idTorneo } = req.params;
+    try {
+      const data = await Organizador.getTorneoData(idTorneo, req.user.sub);
+      if (data.error) {
+        res.status(500).json({
+          message: "Error al obtener los datos del torneo",
+          error: data.error,
+        });
+      } else {
+        res.status(200).json(data);
+      }
+    } catch (err) {
+      res
+        .status(500)
+        .json({
+          msg: "Error al obtener los datos del torneo",
+          err: err.toString(),
+        });
     }
   }
 );
