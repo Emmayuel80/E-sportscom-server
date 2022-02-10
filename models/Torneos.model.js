@@ -70,12 +70,10 @@ Torneos.create = function (torneo, idUsuario) {
         const newUsuarioTorneoTFT = new UsuarioTorneoTFT({
           id_torneo: fields.insertId,
           id_usuario: idUsuario,
-          ganado: false,
-        });
-        UsuarioTorneoTFT.create({
-          ...newUsuarioTorneoTFT,
+          posicion: -1,
           is_organizador: true,
-        }).catch((err) => {
+        });
+        UsuarioTorneoTFT.create(newUsuarioTorneoTFT).catch((err) => {
           reject(err);
         });
         return fields.insertId;
