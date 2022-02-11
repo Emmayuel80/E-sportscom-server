@@ -30,7 +30,7 @@ jobs:
     - run: | 
         sudo /etc/init.d/mysql start
         mysql -e 'CREATE DATABASE esportcom_db;' -uroot -proot
-        mysql -u root -p root esportcom_db < ${{ github.workspace }}/database/database.sql
+        mysql -e 'use esportcom_db source ${{ github.workspace }}/database/database.sql;' -uroot -proot
         mysql -e 'SHOW DATABASES;' -uroot -proot 
     - name: Cancel previous runs of this workflow
       uses: styfle/cancel-workflow-action@0.6.0
