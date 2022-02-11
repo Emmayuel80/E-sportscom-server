@@ -18,8 +18,22 @@ jobs:
       matrix:
         node-version: [14.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+    
+    env:
+      DB_HOST: localhost
+      DB_USER: root
+      DB_PASS: root
+      DB_NAME: esportcom_db
 
     steps:
+    - run: |
+        sudo /etc/init.d/mysql start
+        mysql -u root -p root esportcom_db < ./database/database.sql
+        mysql -e 'SHOW DATABASES;' -uroot -proot    
+    - name: Cancel previous runs of this workflow
+      uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{ github.token }}
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v2
