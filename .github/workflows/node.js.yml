@@ -29,6 +29,7 @@ jobs:
     - uses: actions/checkout@v2
     - run: | 
         sudo /etc/init.d/mysql start
+        mysql -e 'CREATE DATABASE esportcom_db;' -uroot -proot
         mysql -u root -p root esportcom_db < ${{ github.workspace }}/database/database.sql
         mysql -e 'SHOW DATABASES;' -uroot -proot 
     - name: Cancel previous runs of this workflow
