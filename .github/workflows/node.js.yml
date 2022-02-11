@@ -27,10 +27,7 @@ jobs:
 
     steps:
     - run: |
-        cp ./database/database.sql database.sql
-        sudo /etc/init.d/mysql start
-        mysql -u root -p root esportcom_db < database.sql
-        mysql -e 'SHOW DATABASES;' -uroot -proot    
+        ls ${{ github.workspace }}
     - name: Cancel previous runs of this workflow
       uses: styfle/cancel-workflow-action@0.6.0
       with:
