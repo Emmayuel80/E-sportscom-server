@@ -42,8 +42,8 @@ UsuarioTorneoTFT.getJugadoresTorneo = (idTorneo) => {
         AND u.is_organizador = 0;`,
         idTorneo
       )
-      .then((res) => {
-        resolve(res);
+      .then(([fields, rows]) => {
+        resolve(fields);
       })
       .catch((err) => {
         reject(err);
