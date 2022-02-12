@@ -127,7 +127,7 @@ router.get(
   async (req, res) => {
     const { idTorneo } = req.params;
     try {
-      const data = await Organizador.getTorneoData(idTorneo, req.user.sub);
+      const data = await Organizador.getTournamentData(idTorneo, req.user.sub);
       if (data.error) {
         res.status(500).json({
           message: "Error al obtener los datos del torneo",

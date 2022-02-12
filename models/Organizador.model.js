@@ -60,7 +60,7 @@ Organizador.getTournamentData = async function (idTorneo, idUsuario) {
     // League of Legends
     const data = {
       torneo: torneo,
-      usuarios: await UsuarioTorneoTFT.getInfoEquipos(idTorneo),
+      usuarios: await Torneos.getInfoEquipos(idTorneo),
     };
     return data;
   } else if (torneo.id_juego === 2) {
