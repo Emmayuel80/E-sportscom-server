@@ -37,7 +37,7 @@ UsuarioTorneoTFT.getJugadoresTorneo = (idTorneo) => {
         u.posicion,
         u.ganado
  FROM   usuarios AS j,
-        usuario_torneo_tft AS u
+        usuario_torneo_TFT AS u
  WHERE  j.id_usuario = u.id_usuario
         AND u.id_torneo = ?
         AND u.is_organizador = 0;`,
