@@ -2,6 +2,7 @@ const Organizador = {};
 const Torneos = require("./Torneos.model");
 const BitacoraTorneo = require("./Bitacora_torneo.model");
 const UsuarioTorneoTFT = require("./Usuario_torneo_tft.model");
+const EquipoTorneo = require("./Equipo_torneo.model");
 
 Organizador.getDashboardData = async function (idUsuario) {
   const data = {};
@@ -76,6 +77,25 @@ Organizador.getTournamentData = async function (idTorneo, idUsuario) {
 Organizador.getActiveTournament = async function (idUsuario) {
   const torneosActivos = await Torneos.getTorneosActivos(idUsuario);
   return torneosActivos;
+};
+
+Organizador.kickPlayerOrTeam = async function (idTorneo, idUsuario, kickId) {
+  const torneo = await Torneos.getTorneoCreado(idTorneo, idUsuario);
+  if (torneo.id_estado > 0) {
+    throw new Error("El torneo no se encuentra en estado de edición");
+  }
+  if (torneo.id_juego === 1) {
+    // League of Legends
+    await EquipoTorneo.kickEquipo(idTorneo, idUsuario, kickId, torneo.nombre);
+  } else if (torneo.id_juego === 2) {
+    // TFT
+    await UsuarioTorneoTFT.kickParticipante(
+      idTorneo,
+      idUsuario,
+      kickId,
+      torneo.nombre
+    );
+  }
 };
 
 module.exports = Organizador;

@@ -270,7 +270,24 @@ Torneos.cancel = function (idTorneo, idUsuario, torneo) {
           desc_modificacion: "Se cancelo el torneo: " + torneo.nombre,
         });
         await BitacoraTorneo.create(newBitacoraTorneo);
-        // TODO: Enviar correo de cancelacion a los usuarios
+        let mails;
+        // send mail to participants
+        if (torneo.id_juego === 1) {
+          // LoL
+          mails = await Torneos.getInfoEquipos(idTorneo);
+        } else if (torneo.id_juego === 2) {
+          // TFT
+          mails = await UsuarioTorneoTFT.getEmailJugadoresTorneo(idTorneo);
+        }
+        try {
+          require("../services/sendUpdateTournamentMail")(
+            mails,
+            torneo.nombre,
+            "<b> Se ha cancelado el torneo. </b>"
+          );
+        } catch (err) {
+          reject(new Error("Error al enviar correos").toString());
+        }
         resolve(fields);
       })
       .catch((err) => {

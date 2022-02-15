@@ -145,4 +145,21 @@ router.get(
   }
 );
 
+// delete player or team from a tournament
+router.delete(
+  "/kickPlayerOrTeam/:idTorneo/:kickId",
+  authorize("organizador"),
+  async (req, res) => {
+    const { idTorneo, kickId } = req.params;
+    try {
+      await Organizador.kickPlayerOrTeam(idTorneo, req.user.sub, kickId);
+      res.status(200).json({ msg: "Se kickeo al jugador o equipo." });
+    } catch (err) {
+      res.status(500).json({
+        msg: "Error al eliminar el jugador o equipo",
+        err: err.toString(),
+      });
+    }
+  }
+);
 module.exports = router;

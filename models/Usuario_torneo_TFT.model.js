@@ -1,5 +1,6 @@
 const dbConn = require("../config/database");
-
+const Usuario = require("../models/Usuario.model.js");
+const BitacoraTorneo = require("./Bitacora_torneo.model");
 const UsuarioTorneoTFT = function (usuario) {
   this.id_usuario = usuario.id_usuario;
   this.id_torneo = usuario.id_torneo;
@@ -62,6 +63,53 @@ UsuarioTorneoTFT.getEmailJugadoresTorneo = (idTorneo) => {
       )
       .then(([fields, rows]) => {
         resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+// kick participante
+UsuarioTorneoTFT.kickParticipante = (
+  idTorneo,
+  idOrganizador,
+  idUsuario,
+  nombreTorneo
+) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "DELETE FROM usuario_torneo_TFT WHERE id_torneo = ? AND id_usuario = ? AND is_organizador = 0;",
+        [idTorneo, idUsuario]
+      )
+      .then(async (res) => {
+        if (res[0].affectedRows === 0) {
+          reject(new Error("No se realizaron cambios").toString());
+          return;
+        }
+        const usuario = await Usuario.findById(idUsuario);
+        const newBitacoraTorneo = new BitacoraTorneo({
+          id_torneo: idTorneo,
+          id_usuario: idOrganizador,
+          desc_modificacion: "Se expulso al jugador: " + usuario[0].nombre,
+        });
+        await BitacoraTorneo.create(newBitacoraTorneo);
+        // send mail to participants
+        // LoL
+        const mails = [];
+        mails.push(usuario[0]);
+        try {
+          await require("../services/sendUpdateTournamentMail")(
+            mails,
+            nombreTorneo,
+            `<b> Has sido expulsado del torneo ${nombreTorneo} </b>`
+          );
+        } catch (err) {
+          reject(new Error("Error al enviar correos").toString());
+        }
+        resolve(res);
       })
       .catch((err) => {
         reject(err);
