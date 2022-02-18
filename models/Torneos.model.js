@@ -1,6 +1,6 @@
 const dbConn = require("../config/database");
-const UsuarioTorneoTFT = require("./Usuario_Torneo_TFT.model");
-const BitacoraTorneo = require("./Bitacora_Torneo.model");
+const UsuarioTorneoTFT = require("./Usuario_torneo_TFT.model");
+const BitacoraTorneo = require("./Bitacora_torneo.model");
 const Torneos = function (torneo) {
   this.nombre = torneo.nombre;
   this.id_juego = torneo.id_juego;
@@ -54,13 +54,12 @@ Torneos.generateCode = function (nombreTorneo) {
 // CRUD
 // create
 Torneos.create = function (torneo, idUsuario) {
-  if (typeof "" === typeof torneo.fecha_fin_registro) {
-    torneo.fecha_fin_registro = new Date(torneo.fecha_fin_registro);
-  }
-  if (typeof "" === typeof torneo.fecha_inicio) {
-    torneo.fecha_inicio = new Date(torneo.fecha_inicio);
-  }
   return new Promise((resolve, reject) => {
+    try {
+      torneo = require("../services/checkDate")(torneo);
+    } catch (err) {
+      return reject(err.toString());
+    }
     // Crea el torneo
     dbConn
       .promise()
@@ -145,11 +144,13 @@ Torneos.update = function (idTorneo, torneo, oldTorneo, idUsuario) {
           mails = await UsuarioTorneoTFT.getEmailJugadoresTorneo(idTorneo);
         }
         try {
-          require("../services/sendUpdateTournamentMail")(
-            mails,
-            oldTorneo.nombre,
-            changesString.replace(/\n/g, "<br>")
-          );
+          if (mails.length > 0) {
+            require("../services/sendUpdateTournamentMail")(
+              mails,
+              oldTorneo.nombre,
+              changesString.replace(/\n/g, "<br>")
+            );
+          }
         } catch (err) {
           reject(new Error("Error al enviar correos").toString());
         }
@@ -296,7 +297,7 @@ Torneos.cancel = function (idTorneo, idUsuario, torneo) {
   });
 };
 
-Torneos.getTotalTorneos = function (idUsuario) {
+Torneos.getTotalTorneosOrganizador = function (idUsuario) {
   // get number of tournaments created by usuario tft
   return new Promise((resolve, reject) => {
     dbConn
@@ -337,7 +338,7 @@ Torneos.getInfoEquipos = function (idTorneo) {
     dbConn
       .promise()
       .query(
-        "select j.email, j.nombre, j.nombre_invocador, et.posicion, e.nombre as equipo from usuarios as j, usuario_equipo as ue, equipos as e, equipo_torneo as et, torneos as t where t.id_torneo=? and t.id_torneo=et.id_torneo and et.id_equipo=e.id_equipo and e.id_equipo=ue.id_equipo and ue.id_usuario=j.id_usuario;",
+        "select j.email, j.nombre, j.nombre_invocador, j.image, et.posicion, e.nombre as equipo from usuarios as j, usuario_equipo as ue, equipos as e, equipo_torneo as et, torneos as t where t.id_torneo=? and t.id_torneo=et.id_torneo and et.id_equipo=e.id_equipo and e.id_equipo=ue.id_equipo and ue.id_usuario=j.id_usuario;",
         idTorneo
       )
       .then(([fields, rows]) => {
@@ -349,4 +350,37 @@ Torneos.getInfoEquipos = function (idTorneo) {
   });
 };
 
+// list of active tournaments not private
+Torneos.getTorneosActivosNoPrivados = function (start, number) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select nombre, description, fecha_fin_registro, id_juego from torneos where id_estado=0 and privado=0 order by fecha_fin_registro LIMIT ?, ?",
+        [Number(start), Number(number)]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+Torneos.getTotalTorneosActivosNoPrivados = function () {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select count(*) as numero from torneos where id_estado=0 and privado=0"
+      )
+      .then(([fields, rows]) => {
+        resolve(fields[0].numero);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
 module.exports = Torneos;

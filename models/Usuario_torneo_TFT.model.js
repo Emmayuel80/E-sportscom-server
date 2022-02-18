@@ -32,6 +32,7 @@ UsuarioTorneoTFT.getJugadoresTorneo = (idTorneo) => {
       .query(
         `SELECT j.id_usuario,
         j.nombre,
+        j.image,
         u.puntaje_jugador,
         u.no_enfrentamientos_jugados,
         u.total_damage,

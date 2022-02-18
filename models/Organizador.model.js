@@ -1,7 +1,7 @@
 const Organizador = {};
 const Torneos = require("./Torneos.model");
 const BitacoraTorneo = require("./Bitacora_torneo.model");
-const UsuarioTorneoTFT = require("./Usuario_torneo_tft.model");
+const UsuarioTorneoTFT = require("./Usuario_torneo_TFT.model");
 const EquipoTorneo = require("./Equipo_torneo.model");
 
 Organizador.getDashboardData = async function (idUsuario) {
@@ -23,12 +23,7 @@ Organizador.editTorneo = async function (idTorneo, idUsuario, data) {
   if (torneo.id_estado > 0) {
     throw new Error("El torneo no se encuentra en estado de edición");
   }
-  if (typeof "" === typeof data.fecha_fin_registro) {
-    data.fecha_fin_registro = new Date(data.fecha_fin_registro);
-  }
-  if (typeof "" === typeof data.fecha_inicio) {
-    data.fecha_inicio = new Date(data.fecha_inicio);
-  }
+  data = require("../services/checkDate")(data);
   await Torneos.update(idTorneo, data, torneo, idUsuario);
 };
 module.exports = Organizador;
@@ -45,7 +40,7 @@ Organizador.cancelTorneo = async function (idTorneo, idUsuario) {
 // get the list of tournaments created by the user on range
 Organizador.getTorneosCreados = async function (idUsuario, start, end) {
   const torneos = await Torneos.getRangeOfTorneos(idUsuario, start, end);
-  const total = await Torneos.getTotalTorneos(idUsuario);
+  const total = await Torneos.getTotalTorneosOrganizador(idUsuario);
   const data = {
     torneos: torneos,
     total: total,

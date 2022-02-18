@@ -28,6 +28,8 @@ const routes = require("./routes/routes");
 app.use("/api", routes);
 const organizador = require("./routes/organizadorRoutes");
 app.use("/api/organizador", organizador);
+const jugador = require("./routes/jugadorRoutes");
+app.use("/api/jugador", jugador);
 
 // MIDDLEWARE
 app.use(express.static(path.join(__dirname, "../client", "build")));
