@@ -69,11 +69,6 @@ Organizador.getTournamentData = async function (idTorneo, idUsuario) {
   }
 };
 
-Organizador.getActiveTournament = async function (idUsuario) {
-  const torneosActivos = await Torneos.getTorneosActivos(idUsuario, true);
-  return torneosActivos;
-};
-
 Organizador.kickPlayerOrTeam = async function (idTorneo, idUsuario, kickId) {
   const torneo = await Torneos.getTorneoCreado(idTorneo, idUsuario);
   if (torneo.id_estado > 0) {
