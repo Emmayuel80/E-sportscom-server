@@ -23,6 +23,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(logger("dev"));
 
+// STARTUP TASKS
+require("./daemons/startup")();
+
+// DAEMON SCHEDULING
+const cron = require("node-cron");
+cron.schedule("* * * * *", () => {
+  require("./daemons/startup")();
+});
+
 // ROUTES
 const routes = require("./routes/routes");
 app.use("/api", routes);

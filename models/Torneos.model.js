@@ -281,11 +281,13 @@ Torneos.cancel = function (idTorneo, idUsuario, torneo) {
           mails = await UsuarioTorneoTFT.getEmailJugadoresTorneo(idTorneo);
         }
         try {
-          require("../services/sendUpdateTournamentMail")(
-            mails,
-            torneo.nombre,
-            "<b> Se ha cancelado el torneo. </b>"
-          );
+          if (mails.length > 0) {
+            require("../services/sendUpdateTournamentMail")(
+              mails,
+              torneo.nombre,
+              "<b> Se ha cancelado el torneo. </b>"
+            );
+          }
         } catch (err) {
           reject(new Error("Error al enviar correos").toString());
         }
@@ -383,4 +385,43 @@ Torneos.getTotalTorneosActivosNoPrivados = function () {
       });
   });
 };
+
+// get active tournament by name
+Torneos.getTorneoByName = function (nombre, start, number) {
+  const nameString = "%" + nombre + "%";
+
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select * from torneos where nombre like ? and id_estado=0 and privado=0 ORDER BY fecha_fin_registro LIMIT ?, ?",
+        [nameString, Number(start), Number(number)]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+Torneos.getTotalTorneoByName = function (nombre) {
+  const nameString = "%" + nombre + "%";
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select count(*) as numero from torneos where nombre like ? and id_estado=0 and privado=0",
+        nameString
+      )
+      .then(([fields, rows]) => {
+        resolve(fields[0].numero);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 module.exports = Torneos;

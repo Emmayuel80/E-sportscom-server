@@ -20,4 +20,23 @@ router.get(
   }
 );
 
+// get tournament by name
+router.get(
+  "/getTorneoByName/:start/:number",
+  authorize("jugador"),
+  async (req, res) => {
+    const { start, number } = req.params;
+    const name = req.body.name;
+    try {
+      const data = await Jugador.getTorneoByName(name, start, number);
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json({
+        message: "Error al obtener los torneos activos",
+        err: error.toString(),
+      });
+    }
+  }
+);
+
 module.exports = router;
