@@ -28,7 +28,7 @@ require("./daemons/startup")();
 
 // DAEMON SCHEDULING
 const cron = require("node-cron");
-cron.schedule("* * * * *", () => {
+cron.schedule("0 4 * * *", () => {
   require("./daemons/startup")();
 });
 

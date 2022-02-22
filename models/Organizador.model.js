@@ -40,10 +40,10 @@ Organizador.cancelTorneo = async function (idTorneo, idUsuario) {
 // get the list of tournaments created by the user on range
 Organizador.getTorneosCreados = async function (idUsuario, start, end) {
   const torneos = await Torneos.getRangeOfTorneos(idUsuario, start, end);
-  const total = await Torneos.getTotalTorneosOrganizador(idUsuario);
+  const total = await Torneos.getTorneosCreados(idUsuario, true);
   const data = {
     torneos: torneos,
-    total: total,
+    total: total[0],
   };
   if (data.torneos.length <= 0) {
     throw new Error("No se encontraron torneos creados");
@@ -70,7 +70,7 @@ Organizador.getTournamentData = async function (idTorneo, idUsuario) {
 };
 
 Organizador.getActiveTournament = async function (idUsuario) {
-  const torneosActivos = await Torneos.getTorneosActivos(idUsuario);
+  const torneosActivos = await Torneos.getTorneosActivos(idUsuario, true);
   return torneosActivos;
 };
 
