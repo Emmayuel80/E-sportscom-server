@@ -26,7 +26,7 @@ router.get(
   authorize("jugador"),
   async (req, res) => {
     const { start, number } = req.params;
-    const name = req.body.name;
+    const name = req.query.name;
     try {
       const data = await Jugador.getTorneoByName(name, start, number);
       res.status(200).json(data);
