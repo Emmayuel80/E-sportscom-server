@@ -1,7 +1,7 @@
 const dbConn = require("../config/database");
-
+const BitacoraTorneo = require("../models/Bitacora_torneo.model");
 module.exports = function () {
-  console.log("Ejecutando daemon de chequeo de fecha fin de registro");
+  console.log("[DAEMON] Ejecutando daemon de chequeo de fecha fin de registro");
   dbConn
     .promise()
     .query(
@@ -16,8 +16,21 @@ module.exports = function () {
               .query("UPDATE torneos SET id_estado = 1 WHERE id_torneo = ?", [
                 row.id_torneo,
               ]);
+            // Inserta la creacion en la bitacora
+            const newBitacoraTorneo = new BitacoraTorneo({
+              id_torneo: row.id_torneo,
+              id_usuario: row.id_usuario,
+              desc_modificacion: "Se cancelo el torneo: " + row.nombre,
+            });
+            await BitacoraTorneo.create(newBitacoraTorneo);
+            require("../services/sendUpdateTournamentMail")(
+              row,
+              row.nombre,
+              "El torneo cerró su fase de inscripción. <br> El torneo iniciara el " +
+                row.fecha_inicio.toLocaleDateString("es-MX")
+            );
             console.log(
-              "Torneo " +
+              "[fecha fin de registro] Torneo " +
                 row.id_torneo +
                 " ha cambiado de estado a Confirmacion."
             );

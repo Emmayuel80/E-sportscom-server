@@ -10,7 +10,7 @@ const EquipoTorneo = function (equipo) {
 };
 
 // kick equipo torneo
-EquipoTorneo.kickEquipo = (idTorneo, idUsuario, idEquipo, nombreTorneo) => {
+EquipoTorneo.kickEquipo = (idTorneo, idUsuario, idEquipo, torneo) => {
   return new Promise((resolve, reject) => {
     dbConn
       .promise()
@@ -30,14 +30,11 @@ EquipoTorneo.kickEquipo = (idTorneo, idUsuario, idEquipo, nombreTorneo) => {
           desc_modificacion: "Se expulso al equipo: " + nombreEquipo,
         });
         await BitacoraTorneo.create(newBitacoraTorneo);
-        // send mail to participants
-        // LoL
-        const mails = await Equipos.getEmails(idTorneo);
         try {
           require("../services/sendUpdateTournamentMail")(
-            mails,
-            nombreTorneo,
-            `<b> Has sido expulsado del torneo ${nombreTorneo} </b>`
+            torneo,
+            torneo.nombre,
+            `<b> Has sido expulsado del torneo ${torneo.nombre} </b>`
           );
         } catch (err) {
           reject(new Error("Error al enviar correos").toString());

@@ -76,14 +76,14 @@ Organizador.kickPlayerOrTeam = async function (idTorneo, idUsuario, kickId) {
   }
   if (torneo.id_juego === 1) {
     // League of Legends
-    await EquipoTorneo.kickEquipo(idTorneo, idUsuario, kickId, torneo.nombre);
+    await EquipoTorneo.kickEquipo(idTorneo, idUsuario, kickId, torneo);
   } else if (torneo.id_juego === 2) {
     // TFT
     await UsuarioTorneoTFT.kickParticipante(
       idTorneo,
       idUsuario,
       kickId,
-      torneo.nombre
+      torneo
     );
   }
 };

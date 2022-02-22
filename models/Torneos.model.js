@@ -1,5 +1,4 @@
 const dbConn = require("../config/database");
-const UsuarioTorneoTFT = require("./Usuario_torneo_TFT.model");
 const BitacoraTorneo = require("./Bitacora_torneo.model");
 const Torneos = function (torneo) {
   this.nombre = torneo.nombre;
@@ -107,23 +106,12 @@ Torneos.update = function (idTorneo, torneo, oldTorneo, idUsuario) {
             " \nCambios realizados: " +
             changesString,
         });
-        let mails;
-        // send mail to participants
-        if (oldTorneo.id_juego === 1) {
-          // LoL
-          mails = await Torneos.getInfoEquipos(idTorneo);
-        } else if (oldTorneo.id_juego === 2) {
-          // TFT
-          mails = await UsuarioTorneoTFT.getEmailJugadoresTorneo(idTorneo);
-        }
         try {
-          if (mails.length > 0) {
-            require("../services/sendUpdateTournamentMail")(
-              mails,
-              oldTorneo.nombre,
-              changesString.replace(/\n/g, "<br>")
-            );
-          }
+          require("../services/sendUpdateTournamentMail")(
+            oldTorneo,
+            oldTorneo.nombre,
+            changesString.replace(/\n/g, "<br>")
+          );
         } catch (err) {
           reject(new Error("Error al enviar correos").toString());
         }
@@ -232,23 +220,12 @@ Torneos.cancel = function (idTorneo, idUsuario, torneo) {
           desc_modificacion: "Se cancelo el torneo: " + torneo.nombre,
         });
         await BitacoraTorneo.create(newBitacoraTorneo);
-        let mails;
-        // send mail to participants
-        if (torneo.id_juego === 1) {
-          // LoL
-          mails = await Torneos.getInfoEquipos(idTorneo);
-        } else if (torneo.id_juego === 2) {
-          // TFT
-          mails = await UsuarioTorneoTFT.getEmailJugadoresTorneo(idTorneo);
-        }
         try {
-          if (mails.length > 0) {
-            require("../services/sendUpdateTournamentMail")(
-              mails,
-              torneo.nombre,
-              "<b> Se ha cancelado el torneo. </b>"
-            );
-          }
+          await require("../services/sendUpdateTournamentMail")(
+            torneo,
+            torneo.nombre,
+            "<b> Se ha cancelado el torneo. </b>"
+          );
         } catch (err) {
           reject(new Error("Error al enviar correos").toString());
         }

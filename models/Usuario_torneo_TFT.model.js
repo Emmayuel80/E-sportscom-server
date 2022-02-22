@@ -75,7 +75,7 @@ UsuarioTorneoTFT.kickParticipante = (
   idTorneo,
   idOrganizador,
   idUsuario,
-  nombreTorneo
+  torneo
 ) => {
   return new Promise((resolve, reject) => {
     dbConn
@@ -97,14 +97,12 @@ UsuarioTorneoTFT.kickParticipante = (
         });
         await BitacoraTorneo.create(newBitacoraTorneo);
         // send mail to participants
-        // LoL
-        const mails = [];
-        mails.push(usuario[0]);
         try {
           await require("../services/sendUpdateTournamentMail")(
-            mails,
-            nombreTorneo,
-            `<b> Has sido expulsado del torneo ${nombreTorneo} </b>`
+            torneo,
+            torneo.nombre,
+            `<b> Has sido expulsado del torneo ${torneo.nombre} </b>`,
+            usuario[0]
           );
         } catch (err) {
           reject(new Error("Error al enviar correos").toString());
