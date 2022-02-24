@@ -1,5 +1,7 @@
+const BitacoraTorneo = require("./Bitacora_torneo.model");
 const Torneos = require("./Torneos.model");
-const UsuarioTorneoTFT = require("./Usuario_Torneo_TFT.model");
+const UsuarioTorneoTFT = require("./Usuario_torneo_TFT.model");
+const Usuario = require("./Usuario.model");
 const Jugador = {};
 
 Jugador.getTorneosActivos = async function (start, number) {
@@ -49,6 +51,12 @@ Jugador.registerPlayerToTournament = async function (idTorneo, idUsuario) {
       throw new Error(err);
     });
     if(data){
+      // register in the bitacora
+      const usuario = await Usuario.findById(idUsuario);
+      BitacoraTorneo.create(new BitacoraTorneo({
+        id_torneo: idTorneo,
+        id_usuario: torneo.id_usuario,
+        desc_modificacion: `El usuario: ${usuario[0].nombre} se registró al torneo: ${torneo.nombre}.`}));
       return {message: "Jugador registrado correctamente"};
     } else throw new Error("Error al registrar al jugador");
 

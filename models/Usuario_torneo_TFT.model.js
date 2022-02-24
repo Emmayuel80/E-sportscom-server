@@ -11,8 +11,6 @@ const UsuarioTorneoTFT = function (usuario) {
 // Crud
 UsuarioTorneoTFT.create = (newUsuario) => {
   return new Promise((resolve, reject) => {
-    console.log("EL PEPE was here");
-    console.log(newUsuario);
     dbConn
       .promise()
       .query("INSERT INTO usuario_torneo_TFT SET ?", newUsuario)
