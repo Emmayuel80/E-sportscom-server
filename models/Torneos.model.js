@@ -79,7 +79,26 @@ Torneos.create = function (torneo, idUsuario) {
       });
   });
 };
-
+Torneos.getById = function (idTorneo) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "SELECT * FROM torneos WHERE id_torneo = ?",
+        [idTorneo]
+      )
+      .then(([fields, rows]) => {
+        if (fields.length > 0) {
+          resolve(fields[0]);
+        } else {
+          reject(new Error("No se encontró el torneo").toString());
+        }
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
 // update
 Torneos.update = function (idTorneo, torneo, oldTorneo, idUsuario) {
   const changesString = require("../services/showTournamentDiff")(
