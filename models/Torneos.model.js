@@ -83,10 +83,7 @@ Torneos.getById = function (idTorneo) {
   return new Promise((resolve, reject) => {
     dbConn
       .promise()
-      .query(
-        "SELECT * FROM torneos WHERE id_torneo = ?",
-        [idTorneo]
-      )
+      .query("SELECT * FROM torneos WHERE id_torneo = ?", [idTorneo])
       .then(([fields, rows]) => {
         if (fields.length > 0) {
           resolve(fields[0]);

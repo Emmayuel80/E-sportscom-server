@@ -47,7 +47,10 @@ router.post(
   async (req, res) => {
     const { idTorneo } = req.body;
     try {
-      const data = await Jugador.registerPlayerToTournament(idTorneo, req.user.sub);
+      const data = await Jugador.registerPlayerToTournament(
+        idTorneo,
+        req.user.sub
+      );
       res.status(200).json(data);
     } catch (error) {
       res.status(500).json({
@@ -67,7 +70,7 @@ router.get(
     try {
       const torneo = await Torneos.getById(idTorneo);
       const organizador = await Usuario.findById(torneo.id_usuario);
-      res.status(200).json({...torneo, organizador: organizador[0].nombre});
+      res.status(200).json({ ...torneo, organizador: organizador[0].nombre });
     } catch (error) {
       res.status(500).json({
         message: "Error al obtener el torneo",
@@ -77,5 +80,26 @@ router.get(
   }
 );
 
+// get torneos jugador
+router.get(
+  "/getTorneosJugador/:start/:number",
+  authorize("jugador"),
+  async (req, res) => {
+    const { start, number } = req.params;
+    try {
+      const data = await Jugador.getActiveTournaments(
+        req.user.sub,
+        Number(start),
+        Number(number)
+      );
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json({
+        message: "Error al obtener los torneos jugador",
+        error: error.toString(),
+      });
+    }
+  }
+);
 
 module.exports = router;

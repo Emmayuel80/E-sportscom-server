@@ -5,7 +5,6 @@ const UsuarioTorneoTFT = function (usuario) {
   this.id_usuario = usuario.id_usuario;
   this.id_torneo = usuario.id_torneo;
   this.posicion = usuario.posicion;
-  this.is_organizador = usuario.is_organizador;
 };
 
 // Crud
@@ -38,12 +37,32 @@ UsuarioTorneoTFT.getJugadoresTorneo = (idTorneo) => {
  FROM   usuarios AS j,
         usuario_torneo_TFT AS u
  WHERE  j.id_usuario = u.id_usuario
-        AND u.id_torneo = ?
-        AND u.is_organizador = 0;`,
+        AND u.id_torneo = ?`,
         idTorneo
       )
       .then(([fields, rows]) => {
         resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+UsuarioTorneoTFT.getCountJugadoresTorneo = (idTorneo) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `SELECT COUNT(*) AS count
+          FROM   
+            usuario_torneo_TFT
+          WHERE 
+            id_torneo = ?`,
+        idTorneo
+      )
+      .then(([fields, rows]) => {
+        resolve(fields[0].count);
       })
       .catch((err) => {
         reject(err);
@@ -67,8 +86,7 @@ UsuarioTorneoTFT.getJugadorTorneo = (idTorneo, idUsuario) => {
         usuario_torneo_TFT AS u
  WHERE  j.id_usuario = u.id_usuario
         AND u.id_torneo = ?
-        AND u.id_usuario = ?
-        AND u.is_organizador = 0;`,
+        AND u.id_usuario = ?`,
         [idTorneo, idUsuario]
       )
       .then(([fields, rows]) => {
@@ -108,7 +126,7 @@ UsuarioTorneoTFT.kickParticipante = (
     dbConn
       .promise()
       .query(
-        "DELETE FROM usuario_torneo_TFT WHERE id_torneo = ? AND id_usuario = ? AND is_organizador = 0;",
+        "DELETE FROM usuario_torneo_TFT WHERE id_torneo = ? AND id_usuario = ? ",
         [idTorneo, idUsuario]
       )
       .then(async (res) => {
@@ -135,6 +153,23 @@ UsuarioTorneoTFT.kickParticipante = (
           reject(new Error("Error al enviar correos").toString());
         }
         resolve(res);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+UsuarioTorneoTFT.getAllfromUsuario = (idUsuario) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select t.* from torneos as t where t.id_estado <=3 and t.id_torneo in (select ut.id_torneo from usuario_torneo_TFT as ut, usuarios as u where u.id_usuario = ? and u.id_usuario=ut.id_usuario);",
+        idUsuario
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
       })
       .catch((err) => {
         reject(err);
