@@ -294,7 +294,7 @@ Torneos.getTorneosActivosNoPrivados = function (start, number) {
     dbConn
       .promise()
       .query(
-        "select nombre, description, fecha_fin_registro, id_juego from torneos where id_estado=0 and privado=0 order by fecha_fin_registro LIMIT ?, ?",
+        "select id_torneo, nombre, description, fecha_fin_registro, id_juego from torneos where id_estado=0 and privado=0 order by fecha_fin_registro LIMIT ?, ?",
         [Number(start), Number(number)]
       )
       .then(([fields, rows]) => {

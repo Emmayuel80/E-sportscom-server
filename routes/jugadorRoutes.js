@@ -4,6 +4,7 @@ const authorize = require("../middleware/authorize.js");
 const Jugador = require("../models/Jugador.model");
 const Torneos = require("../models/Torneos.model");
 const Usuario = require("../models/Usuario.model.js");
+const UsuarioTorneoTFT = require("../models/Usuario_torneo_TFT.model.js");
 router.get(
   "/getTorneosActivos/:start/:number",
   authorize("jugador"),
@@ -69,8 +70,24 @@ router.get(
     const { idTorneo } = req.params;
     try {
       const torneo = await Torneos.getById(idTorneo);
+      let participantes;
+      if (torneo.id_juego === 1) {
+        // LoL
+        participantes = await Torneos.getInfoEquipos(torneo.id_torneo);
+      } else if (torneo.id_juego === 2) {
+        // TFT
+        participantes = await UsuarioTorneoTFT.getJugadoresTorneo(
+          torneo.id_torneo
+        );
+      }
       const organizador = await Usuario.findById(torneo.id_usuario);
-      res.status(200).json({ ...torneo, organizador: organizador[0].nombre });
+      res
+        .status(200)
+        .json({
+          ...torneo,
+          participantes: participantes,
+          organizador: organizador[0].nombre,
+        });
     } catch (error) {
       res.status(500).json({
         message: "Error al obtener el torneo",
