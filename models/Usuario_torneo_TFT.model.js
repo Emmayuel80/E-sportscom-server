@@ -5,14 +5,11 @@ const UsuarioTorneoTFT = function (usuario) {
   this.id_usuario = usuario.id_usuario;
   this.id_torneo = usuario.id_torneo;
   this.posicion = usuario.posicion;
-  this.is_organizador = usuario.is_organizador;
 };
 
 // Crud
 UsuarioTorneoTFT.create = (newUsuario) => {
   return new Promise((resolve, reject) => {
-    console.log("EL PEPE was here");
-    console.log(newUsuario);
     dbConn
       .promise()
       .query("INSERT INTO usuario_torneo_TFT SET ?", newUsuario)
@@ -32,6 +29,55 @@ UsuarioTorneoTFT.getJugadoresTorneo = (idTorneo) => {
       .query(
         `SELECT j.id_usuario,
         j.nombre,
+        j.image,
+        u.puntaje_jugador,
+        u.no_enfrentamientos_jugados,
+        u.total_damage,
+        u.posicion
+ FROM   usuarios AS j,
+        usuario_torneo_TFT AS u
+ WHERE  j.id_usuario = u.id_usuario
+        AND u.id_torneo = ?`,
+        idTorneo
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+UsuarioTorneoTFT.getCountJugadoresTorneo = (idTorneo) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `SELECT COUNT(*) AS count
+          FROM   
+            usuario_torneo_TFT
+          WHERE 
+            id_torneo = ?`,
+        idTorneo
+      )
+      .then(([fields, rows]) => {
+        resolve(fields[0].count);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+UsuarioTorneoTFT.getJugadorTorneo = (idTorneo, idUsuario) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `SELECT j.id_usuario,
+        j.nombre,
+        j.image,
         u.puntaje_jugador,
         u.no_enfrentamientos_jugados,
         u.total_damage,
@@ -40,8 +86,8 @@ UsuarioTorneoTFT.getJugadoresTorneo = (idTorneo) => {
         usuario_torneo_TFT AS u
  WHERE  j.id_usuario = u.id_usuario
         AND u.id_torneo = ?
-        AND u.is_organizador = 0;`,
-        idTorneo
+        AND u.id_usuario = ?`,
+        [idTorneo, idUsuario]
       )
       .then(([fields, rows]) => {
         resolve(fields);
@@ -74,13 +120,13 @@ UsuarioTorneoTFT.kickParticipante = (
   idTorneo,
   idOrganizador,
   idUsuario,
-  nombreTorneo
+  torneo
 ) => {
   return new Promise((resolve, reject) => {
     dbConn
       .promise()
       .query(
-        "DELETE FROM usuario_torneo_TFT WHERE id_torneo = ? AND id_usuario = ? AND is_organizador = 0;",
+        "DELETE FROM usuario_torneo_TFT WHERE id_torneo = ? AND id_usuario = ? ",
         [idTorneo, idUsuario]
       )
       .then(async (res) => {
@@ -96,19 +142,34 @@ UsuarioTorneoTFT.kickParticipante = (
         });
         await BitacoraTorneo.create(newBitacoraTorneo);
         // send mail to participants
-        // LoL
-        const mails = [];
-        mails.push(usuario[0]);
         try {
           await require("../services/sendUpdateTournamentMail")(
-            mails,
-            nombreTorneo,
-            `<b> Has sido expulsado del torneo ${nombreTorneo} </b>`
+            torneo,
+            torneo.nombre,
+            `<b> Has sido expulsado del torneo ${torneo.nombre} </b>`,
+            usuario[0]
           );
         } catch (err) {
           reject(new Error("Error al enviar correos").toString());
         }
         resolve(res);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+UsuarioTorneoTFT.getAllfromUsuario = (idUsuario) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select t.* from torneos as t where t.id_estado <=3 and t.id_torneo in (select ut.id_torneo from usuario_torneo_TFT as ut, usuarios as u where u.id_usuario = ? and u.id_usuario=ut.id_usuario);",
+        idUsuario
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
       })
       .catch((err) => {
         reject(err);

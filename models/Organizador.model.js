@@ -1,7 +1,7 @@
 const Organizador = {};
 const Torneos = require("./Torneos.model");
 const BitacoraTorneo = require("./Bitacora_torneo.model");
-const UsuarioTorneoTFT = require("./Usuario_torneo_tft.model");
+const UsuarioTorneoTFT = require("./Usuario_torneo_TFT.model");
 const EquipoTorneo = require("./Equipo_torneo.model");
 
 Organizador.getDashboardData = async function (idUsuario) {
@@ -23,12 +23,7 @@ Organizador.editTorneo = async function (idTorneo, idUsuario, data) {
   if (torneo.id_estado > 0) {
     throw new Error("El torneo no se encuentra en estado de edición");
   }
-  if (typeof "" === typeof data.fecha_fin_registro) {
-    data.fecha_fin_registro = new Date(data.fecha_fin_registro);
-  }
-  if (typeof "" === typeof data.fecha_inicio) {
-    data.fecha_inicio = new Date(data.fecha_inicio);
-  }
+  data = require("../services/checkDate")(data);
   await Torneos.update(idTorneo, data, torneo, idUsuario);
 };
 module.exports = Organizador;
@@ -45,10 +40,10 @@ Organizador.cancelTorneo = async function (idTorneo, idUsuario) {
 // get the list of tournaments created by the user on range
 Organizador.getTorneosCreados = async function (idUsuario, start, end) {
   const torneos = await Torneos.getRangeOfTorneos(idUsuario, start, end);
-  const total = await Torneos.getTotalTorneos(idUsuario);
+  const total = await Torneos.getTorneosCreados(idUsuario, true);
   const data = {
     torneos: torneos,
-    total: total,
+    total: total[0],
   };
   if (data.torneos.length <= 0) {
     throw new Error("No se encontraron torneos creados");
@@ -74,11 +69,6 @@ Organizador.getTournamentData = async function (idTorneo, idUsuario) {
   }
 };
 
-Organizador.getActiveTournament = async function (idUsuario) {
-  const torneosActivos = await Torneos.getTorneosActivos(idUsuario);
-  return torneosActivos;
-};
-
 Organizador.kickPlayerOrTeam = async function (idTorneo, idUsuario, kickId) {
   const torneo = await Torneos.getTorneoCreado(idTorneo, idUsuario);
   if (torneo.id_estado > 0) {
@@ -86,14 +76,14 @@ Organizador.kickPlayerOrTeam = async function (idTorneo, idUsuario, kickId) {
   }
   if (torneo.id_juego === 1) {
     // League of Legends
-    await EquipoTorneo.kickEquipo(idTorneo, idUsuario, kickId, torneo.nombre);
+    await EquipoTorneo.kickEquipo(idTorneo, idUsuario, kickId, torneo);
   } else if (torneo.id_juego === 2) {
     // TFT
     await UsuarioTorneoTFT.kickParticipante(
       idTorneo,
       idUsuario,
       kickId,
-      torneo.nombre
+      torneo
     );
   }
 };

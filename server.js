@@ -23,11 +23,22 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(logger("dev"));
 
+// STARTUP TASKS
+require("./daemons/startup")();
+
+// DAEMON SCHEDULING
+const cron = require("node-cron");
+cron.schedule("0 4 * * *", () => {
+  require("./daemons/startup")();
+});
+
 // ROUTES
 const routes = require("./routes/routes");
 app.use("/api", routes);
 const organizador = require("./routes/organizadorRoutes");
 app.use("/api/organizador", organizador);
+const jugador = require("./routes/jugadorRoutes");
+app.use("/api/jugador", jugador);
 
 // MIDDLEWARE
 app.use(express.static(path.join(__dirname, "../client", "build")));
