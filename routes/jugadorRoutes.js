@@ -81,13 +81,11 @@ router.get(
         );
       }
       const organizador = await Usuario.findById(torneo.id_usuario);
-      res
-        .status(200)
-        .json({
-          ...torneo,
-          participantes: participantes,
-          organizador: organizador[0].nombre,
-        });
+      res.status(200).json({
+        ...torneo,
+        participantes: participantes,
+        organizador: organizador[0].nombre,
+      });
     } catch (error) {
       res.status(500).json({
         message: "Error al obtener el torneo",
@@ -118,5 +116,56 @@ router.get(
     }
   }
 );
+
+// create a team
+router.post("/createTeam", authorize("jugador"), async (req, res) => {
+  const { nombre, logo } = req.body;
+  const equipo = {
+    nombre,
+    logo,
+  };
+  try {
+    const data = await Jugador.createEquipo(req.user.sub, equipo);
+    res.status(200).json({
+      message: "Equipo creado",
+      data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al crear el equipo",
+      error: error.toString(),
+    });
+  }
+});
+
+// join team
+router.post("/joinTeam", authorize("jugador"), async (req, res) => {
+  const { codigo } = req.body;
+  try {
+    const data = await Jugador.joinEquipo(req.user.sub, codigo);
+    res.status(200).json({
+      message: "Se ha unido al equipo",
+      data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al unirse al equipo",
+      error: error.toString(),
+    });
+  }
+});
+
+// get teams
+router.get("/getEquipos", authorize("jugador"), async (req, res) => {
+  try {
+    const data = await Jugador.getEquipos(req.user.sub);
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al obtener los equipos",
+      error: error.toString(),
+    });
+  }
+});
 
 module.exports = router;

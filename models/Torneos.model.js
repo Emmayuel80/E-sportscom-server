@@ -225,7 +225,7 @@ Torneos.cancel = function (idTorneo, idUsuario, torneo) {
     dbConn
       .promise()
       .query(
-        "UPDATE torneos SET `id_estado` = '5' WHERE (`id_torneo` = ?);",
+        "UPDATE torneos SET `id_estado` = '4' WHERE (`id_torneo` = ?);",
         idTorneo
       )
       .then(async ([fields, rows]) => {

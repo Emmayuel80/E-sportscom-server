@@ -1,8 +1,9 @@
 const dbConn = require("../config/database");
+const UsuarioEquipo = require("./Usuario_equipo.model");
 const Equipos = function (equipo) {
   this.nombre = equipo.nombre;
   this.logo = equipo.logo;
-  this.fecha_creacion = equipo.fecha_creacion;
+  this.fecha_creacion = new Date();
   this.codigo_equipo = Equipos.generateCode();
 };
 
@@ -46,3 +47,49 @@ Equipos.getEmails = function (idEquipo) {
       });
   });
 };
+
+// create
+Equipos.create = function (equipo, idUsuario) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "INSERT INTO equipos (nombre, logo, fecha_creacion, codigo_equipo) VALUES (?, ?, ?, ?)",
+        [
+          equipo.nombre,
+          equipo.logo,
+          equipo.fecha_creacion,
+          equipo.codigo_equipo,
+        ]
+      )
+      .then(([fields, rows]) => {
+        const usuario = new UsuarioEquipo({
+          id_equipo: fields.insertId,
+          id_usuario: idUsuario,
+          capitan: true,
+        });
+        UsuarioEquipo.create(usuario);
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+// get equipo by code_equipo
+Equipos.getByCode = function (code) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("select * from equipos where codigo_equipo=?;", [code])
+      .then(([fields, rows]) => {
+        resolve(fields[0]);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+module.exports = Equipos;

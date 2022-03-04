@@ -4,6 +4,8 @@ const UsuarioTorneoTFT = require("./Usuario_torneo_TFT.model");
 const Usuario = require("./Usuario.model");
 const Jugador = {};
 const dbConn = require("../config/database");
+const Equipos = require("./Equipos.model");
+const UsuarioEquipo = require("./Usuario_equipo.model");
 
 Jugador.getTorneosActivos = async function (start, number) {
   const torneos = await Torneos.getTorneosActivosNoPrivados(start, number);
@@ -97,4 +99,60 @@ Jugador.getActiveTournaments = async function (idUsuario, start, number) {
     throw new Error("No se encontraron torneos activos");
   return data;
 };
+
+Jugador.createEquipo = async function (idUsuario, equipo) {
+  // check if the user already has/join 5 teams
+  const equipos = await UsuarioEquipo.getTotalEquiposJugador(idUsuario);
+  if (equipos >= 5) throw new Error("El jugador ya tiene 5 equipos");
+  // check if the team name is already taken ?
+  // create team
+  const newEquipo = new Equipos({
+    nombre: equipo.nombre,
+    logo: equipo.logo,
+  });
+  return await Equipos.create(newEquipo, idUsuario);
+};
+
+Jugador.joinEquipo = async function (idUsuario, code) {
+  // check if the team exists
+  const equipo = await Equipos.getByCode(code);
+  if (!equipo) throw new Error("El equipo no existe");
+  // check if the user already has/join 5 teams
+  const equipos = await UsuarioEquipo.getTotalEquiposJugador(idUsuario);
+  if (equipos >= 5) throw new Error("El jugador ya tiene 5 equipos");
+  // check if the user is already in the team
+  const usuario = await UsuarioEquipo.getEquipoJugador(
+    idUsuario,
+    equipo.id_equipo
+  );
+  if (usuario) throw new Error("El jugador ya está en el equipo");
+  // check if the team is full
+  const equipoFull = await UsuarioEquipo.getTotalJugadoresEquipo(
+    equipo.id_equipo
+  );
+  if (equipoFull >= 5) throw new Error("El equipo está lleno");
+
+  // join the team
+  const newUsuarioEquipo = new UsuarioEquipo({
+    id_usuario: idUsuario,
+    id_equipo: equipo.id_equipo,
+    capitan: false,
+  });
+  return await UsuarioEquipo.create(newUsuarioEquipo);
+};
+
+Jugador.getEquipos = async function (idUsuario) {
+  const [fields] = await dbConn
+    .promise()
+    .query(
+      "select e.* from equipos as e, usuario_equipo as ue, usuarios as u where u.id_usuario=? and u.id_usuario=ue.id_usuario and ue.id_equipo=e.id_equipo ORDER BY e.fecha_creacion;",
+      [idUsuario]
+    )
+    .catch((err) => {
+      throw new Error(err);
+    });
+  if (fields.length <= 0) throw new Error("El jugador no tiene equipos");
+  return fields;
+};
+
 module.exports = Jugador;
