@@ -168,4 +168,58 @@ router.get("/getEquipos", authorize("jugador"), async (req, res) => {
   }
 });
 
+// update team
+router.put("/updateEquipo", authorize("jugador"), async (req, res) => {
+  const equipo = req.body;
+  try {
+    await Jugador.editEquipo(req.user.sub, equipo);
+    res.status(200).json({ msg: "Equipo actualizado" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al actualizar el equipo",
+      error: error.toString(),
+    });
+  }
+});
+
+// Get tournament by Code
+router.get("/getTournamentByCode", authorize("jugador"), async (req, res) => {
+  const code = req.query.code;
+  try {
+    const data = await Jugador.getTournamentbyCode(code);
+    if (!data) {
+      res.status(404).json({
+        message: "El torneo no existe",
+      });
+    }
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al obtener los datos del torneo",
+      error: error.toString(),
+    });
+  }
+});
+
+router.get(
+  "/getHistorialTorneos/:start/:number",
+  authorize("jugador"),
+  async (req, res) => {
+    const { start, number } = req.params;
+    try {
+      const data = await Jugador.getTournamentsHistory(
+        req.user.sub,
+        Number(start),
+        Number(number)
+      );
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json({
+        message: "Error al obtener los torneos jugador",
+        error: error.toString(),
+      });
+    }
+  }
+);
+
 module.exports = router;

@@ -1,5 +1,6 @@
 const dbConn = require("../config/database");
 const UsuarioEquipo = require("./Usuario_equipo.model");
+const BitacoraEquipo = require("./Bitacora_equipo.model");
 const Equipos = function (equipo) {
   this.nombre = equipo.nombre;
   this.logo = equipo.logo;
@@ -83,6 +84,52 @@ Equipos.getByCode = function (code) {
     dbConn
       .promise()
       .query("select * from equipos where codigo_equipo=?;", [code])
+      .then(([fields, rows]) => {
+        resolve(fields[0]);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+// update
+Equipos.update = function (equipo, idCapitan, oldNombre, oldLogo) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("UPDATE equipos SET nombre=?, logo=? WHERE id_equipo=?", [
+        equipo.nombre,
+        equipo.logo,
+        equipo.id_equipo,
+      ])
+      .then(async ([fields, rows]) => {
+        let descModificacion = "";
+        if (oldNombre !== equipo.nombre) {
+          descModificacion += `El nombre del equipo ha cambiado de ${oldNombre} a ${equipo.nombre} \n`;
+        }
+        if (equipo.logo !== oldLogo) {
+          descModificacion += `El logo del equipo ha sido cambiado \n`;
+        }
+        const newBitacoraEquipo = new BitacoraEquipo({
+          id_usuario: idCapitan,
+          id_equipo: equipo.id_equipo,
+          desc_modificacion: descModificacion,
+        });
+        await BitacoraEquipo.create(newBitacoraEquipo);
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+Equipos.getById = function (idEquipo) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("SELECT * FROM equipos WHERE id_equipo = ?", [idEquipo])
       .then(([fields, rows]) => {
         resolve(fields[0]);
       })

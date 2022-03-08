@@ -360,4 +360,19 @@ Torneos.getTotalTorneoByName = function (nombre) {
   });
 };
 
+// get torneo by code_torneo
+Torneos.getTorneoByCode = function (code) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("select * from torneos where codigo_torneo=?", [code])
+      .then(([fields, rows]) => {
+        resolve(fields[0]);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 module.exports = Torneos;

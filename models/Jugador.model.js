@@ -104,7 +104,6 @@ Jugador.createEquipo = async function (idUsuario, equipo) {
   // check if the user already has/join 5 teams
   const equipos = await UsuarioEquipo.getTotalEquiposJugador(idUsuario);
   if (equipos >= 5) throw new Error("El jugador ya tiene 5 equipos");
-  // check if the team name is already taken ?
   // create team
   const newEquipo = new Equipos({
     nombre: equipo.nombre,
@@ -153,6 +152,66 @@ Jugador.getEquipos = async function (idUsuario) {
     });
   if (fields.length <= 0) throw new Error("El jugador no tiene equipos");
   return fields;
+};
+
+Jugador.editEquipo = async function (idUsuario, equipo) {
+  // check if the user is the captain of the team
+  const usuario = await UsuarioEquipo.getEquipoJugador(
+    idUsuario,
+    equipo.id_equipo
+  );
+  if (!usuario) throw new Error("El jugador no es el capitan del equipo");
+  if (!usuario.capitan) throw new Error("El jugador no es capitan del equipo");
+  // update team
+  const oldEquipo = await Equipos.getById(equipo.id_equipo);
+  if (oldEquipo.nombre === equipo.nombre && oldEquipo.logo === equipo.logo)
+    throw new Error("El equipo no ha cambiado");
+
+  await Equipos.update(equipo, idUsuario, oldEquipo.nombre, oldEquipo.logo);
+};
+
+Jugador.getTournamentbyCode = async function (code) {
+  const torneo = await Torneos.getTorneoByCode(code);
+  if (torneo.id_juego === 1) {
+    // League of Legends
+    const data = {
+      torneo: torneo,
+      participantes: await Torneos.getInfoEquipos(torneo.id_torneo),
+    };
+    return data;
+  } else if (torneo.id_juego === 2) {
+    // TFT
+    const data = {
+      torneo: torneo,
+      participantes: await UsuarioTorneoTFT.getJugadoresTorneo(
+        torneo.id_torneo
+      ),
+    };
+    return data;
+  }
+};
+
+// Get all tournaments
+
+Jugador.getTournamentsHistory = async function (idUsuario, start, number) {
+  const torneosTFT = await UsuarioTorneoTFT.getAllfromUsuario(idUsuario);
+  const [fields] = await dbConn
+    .promise()
+    .query(
+      " select t.* from torneos as t where t.id_torneo in (select et.id_torneo from equipo_torneo as et, equipos as e, usuario_equipo as ue, usuarios as u where u.id_usuario=? and u.id_usuario=ue.id_usuario and ue.id_equipo=e.id_equipo and e.id_equipo=et.id_equipo);",
+      [idUsuario]
+    );
+  const torneos = [...torneosTFT, ...fields].sort(
+    (a, b) => a.fecha_inicio - b.fecha_inicio
+  );
+
+  const data = {
+    torneos: torneos.slice(start, start + number),
+    total: torneosTFT.length + fields.length,
+  };
+  if (data.torneos.length <= 0)
+    throw new Error("No se encontraron torneos activos");
+  return data;
 };
 
 module.exports = Jugador;
