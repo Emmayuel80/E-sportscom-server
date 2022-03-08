@@ -222,4 +222,20 @@ router.get(
   }
 );
 
+// kick player from team
+router.delete("/kickPlayerFromTeam", authorize("jugador"), async (req, res) => {
+  const { idEquipo, idJugador } = req.body;
+  try {
+    await Jugador.kickPlayerFromTeam(req.user.sub, idEquipo, idJugador);
+    res.status(200).json({
+      message: "Jugador expulsado del equipo",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al expulsar al jugador del equipo",
+      error: error.toString(),
+    });
+  }
+});
+
 module.exports = router;

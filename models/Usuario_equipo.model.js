@@ -104,4 +104,36 @@ UsuarioEquipo.getCapitanEquipo = function (idEquipo) {
   });
 };
 
+// delete player from team
+UsuarioEquipo.delete = function (idUsuario, idEquipo, nombreEquipo) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "DELETE FROM usuario_equipo WHERE id_usuario = ? AND id_equipo = ? AND capitan = 0",
+        [idUsuario, idEquipo]
+      )
+      .then(async ([fields, rows]) => {
+        // add to bitacora
+        const capitan = await UsuarioEquipo.getCapitanEquipo(idEquipo);
+        const usuario = await Usuario.findById(idUsuario);
+        const newBitacoraEquipo = new BitacoraEquipo({
+          id_usuario: capitan.id_usuario,
+          id_equipo: idEquipo,
+          desc_modificacion: `El jugador ${usuario[0].nombre} ha sido expulsado del equipo`,
+        });
+        await BitacoraEquipo.create(newBitacoraEquipo);
+        require("../services/sendUpdateJugadorMail")(
+          usuario[0].email,
+          usuario[0].nombre,
+          `el equipo ${nombreEquipo.nombre}`,
+          `<b>Has sido explusado del equipo</b>`
+        );
+        resolve({ msg: "UsuarioEquipo eliminado" });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
 module.exports = UsuarioEquipo;

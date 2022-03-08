@@ -214,4 +214,19 @@ Jugador.getTournamentsHistory = async function (idUsuario, start, number) {
   return data;
 };
 
+Jugador.kickPlayerFromTeam = async function (idUsuario, idEquipo, idJugador) {
+  // check if the user is the captain of the team
+  const usuario = await UsuarioEquipo.getEquipoJugador(idUsuario, idEquipo);
+  if (!usuario) throw new Error("El jugador no es el capitan del equipo");
+  if (!usuario.capitan) throw new Error("El jugador no es capitan del equipo");
+  // check if the user is the player to kick
+  const jugador = await UsuarioEquipo.getEquipoJugador(idJugador, idEquipo);
+  if (!jugador) throw new Error("El jugador no existe en el equipo");
+  if (jugador.capitan) throw new Error("El jugador es capitan del equipo");
+  // kick the player
+  // get team name
+  const nombreEquipo = await Equipos.getNombre(idEquipo);
+  await UsuarioEquipo.delete(idJugador, idEquipo, nombreEquipo);
+};
+
 module.exports = Jugador;
