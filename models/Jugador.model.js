@@ -6,7 +6,8 @@ const Jugador = {};
 const dbConn = require("../config/database");
 const Equipos = require("./Equipos.model");
 const UsuarioEquipo = require("./Usuario_equipo.model");
-
+const EquipoTorneo = require("./Equipo_torneo.model");
+const BitacoraEquipo = require("./Bitacora_equipo.model");
 Jugador.getTorneosActivos = async function (start, number) {
   const torneos = await Torneos.getTorneosActivosNoPrivados(start, number);
   const total = await Torneos.getTotalTorneosActivosNoPrivados();
@@ -229,4 +230,60 @@ Jugador.kickPlayerFromTeam = async function (idUsuario, idEquipo, idJugador) {
   await UsuarioEquipo.delete(idJugador, idEquipo, nombreEquipo);
 };
 
+Jugador.getEquipo = async function (idUsuario, idEquipo) {
+  const equipo = await Equipos.getById(idEquipo);
+  if (!equipo) throw new Error("El equipo no existe");
+  const usuario = await UsuarioEquipo.getEquipoJugador(idUsuario, idEquipo);
+  if (!usuario) throw new Error("El jugador no es parte del equipo");
+  const jugadores = await Equipos.getPlayersInfo(idEquipo);
+  const data = {
+    equipo: equipo,
+    jugadores: jugadores,
+  };
+  return data;
+};
+/* eslint-disable complexity */
+Jugador.registerTeamToTournament = async function (
+  idUsuario,
+  idTorneo,
+  idEquipo
+) {
+  const equipo = await Equipos.getById(idEquipo);
+  if (!equipo) throw new Error("El equipo no existe");
+  const usuario = await UsuarioEquipo.getEquipoJugador(idUsuario, idEquipo);
+  if (!usuario) throw new Error("El jugador no es parte del equipo");
+  if (!usuario.capitan) throw new Error("El jugador no es capitan del equipo");
+  const torneo = await Torneos.getById(idTorneo);
+  if (!torneo) throw new Error("El torneo no existe");
+  // check if the tournament is already full
+  const participantes = await EquipoTorneo.getTotalEquipos(idTorneo);
+  if (participantes.total >= torneo.no_equipos)
+    throw new Error("El torneo ya esta lleno");
+  // check if the tournament is on register state
+  if (torneo.id_estado !== 0)
+    throw new Error("El torneo no esta en estado de registro");
+  const totalJugadoresEquipo = await UsuarioEquipo.getTotalJugadoresEquipo(
+    idEquipo
+  );
+  if (totalJugadoresEquipo.total < 5)
+    throw new Error("El equipo no tiene la cantidad de jugadores requerida");
+  // register the team
+  if (torneo.id_juego === 1) {
+    // League of Legends
+    const newEquipoTorneo = new EquipoTorneo({
+      id_torneo: idTorneo,
+      id_equipo: idEquipo,
+      estado: true,
+      no_equipo: participantes.total + 1,
+    });
+    await EquipoTorneo.create(newEquipoTorneo);
+    const newBitacoraEquipo = new BitacoraEquipo({
+      id_usuario: idUsuario,
+      id_equipo: idEquipo,
+      desc_modificacion: `El equipo ${equipo.nombre} se ha registrado al torneo ${torneo.nombre}`,
+    });
+    await BitacoraEquipo.create(newBitacoraEquipo);
+    return { msg: "Equipo registrado" };
+  } else throw new Error("El torneo no es de League of Legends");
+};
 module.exports = Jugador;

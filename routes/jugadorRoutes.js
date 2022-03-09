@@ -62,6 +62,27 @@ router.post(
   }
 );
 
+// register to lol tournament
+router.post(
+  "/registerTeamToTournament",
+  authorize("jugador"),
+  async (req, res) => {
+    const { idTorneo, idEquipo } = req.body;
+    try {
+      const data = await Jugador.registerTeamToTournament(
+        req.user.sub,
+        idTorneo,
+        idEquipo
+      );
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json({
+        message: "Error al registrar al jugador",
+        error: error.toString(),
+      });
+    }
+  }
+);
 // get tournament data
 router.get(
   "/getTorneoData/:idTorneo",
@@ -233,6 +254,25 @@ router.delete("/kickPlayerFromTeam", authorize("jugador"), async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Error al expulsar al jugador del equipo",
+      error: error.toString(),
+    });
+  }
+});
+
+// get equipo
+router.get("/getEquipo/:idEquipo", authorize("jugador"), async (req, res) => {
+  const { idEquipo } = req.params;
+  try {
+    const data = await Jugador.getEquipo(req.user.sub, idEquipo);
+    if (!data) {
+      res.status(404).json({
+        message: "El equipo no existe",
+      });
+    }
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al obtener los datos del equipo",
       error: error.toString(),
     });
   }

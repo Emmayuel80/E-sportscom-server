@@ -139,4 +139,22 @@ Equipos.getById = function (idEquipo) {
   });
 };
 
+// get nombre, nombre_invocador and image
+Equipos.getPlayersInfo = function (idEquipo) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select u.nombre, u.nombre_invocador, u.image from usuarios as u, usuario_equipo as ue, equipos as e where e.id_equipo=? and e.id_equipo=ue.id_equipo and ue.id_usuario=u.id_usuario;",
+        [idEquipo]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 module.exports = Equipos;

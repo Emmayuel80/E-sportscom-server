@@ -46,3 +46,38 @@ EquipoTorneo.kickEquipo = (idTorneo, idUsuario, idEquipo, torneo) => {
       });
   });
 };
+
+// create
+EquipoTorneo.create = (equipo) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("INSERT INTO equipo_torneo SET ?", equipo)
+      .then((res) => {
+        resolve(res);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+// get count of teams in a tournament
+EquipoTorneo.getTotalEquipos = (idequipo) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select count(*) as total from new_esportscom.equipo_torneo where id_torneo=?",
+        idequipo
+      )
+      .then(([fields, rows]) => {
+        resolve(fields[0]);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+module.exports = EquipoTorneo;
