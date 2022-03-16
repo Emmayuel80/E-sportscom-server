@@ -85,7 +85,7 @@ Jugador.getActiveTournaments = async function (idUsuario, start, number) {
   const [fields] = await dbConn
     .promise()
     .query(
-      " select t.* from torneos as t where t.id_estado <=3 and t.id_torneo in (select et.id_torneo from equipo_torneo as et, equipos as e, usuario_equipo as ue, usuarios as u where u.id_usuario=? and u.id_usuario=ue.id_usuario and ue.id_equipo=e.id_equipo and e.id_equipo=et.id_equipo);",
+      " select t.* from torneos as t where t.id_estado <=2 and t.id_torneo in (select et.id_torneo from equipo_torneo as et, equipos as e, usuario_equipo as ue, usuarios as u where u.id_usuario=? and u.id_usuario=ue.id_usuario and ue.id_equipo=e.id_equipo and e.id_equipo=et.id_equipo);",
       [idUsuario]
     );
   const torneos = [...torneosTFT, ...fields].sort(
@@ -151,7 +151,7 @@ Jugador.getEquipos = async function (idUsuario) {
     .catch((err) => {
       throw new Error(err);
     });
-  if (fields.length <= 0) throw new Error("El jugador no tiene equipos");
+  if (fields.length <= 0) return [];
   return fields;
 };
 

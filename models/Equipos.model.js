@@ -145,7 +145,7 @@ Equipos.getPlayersInfo = function (idEquipo) {
     dbConn
       .promise()
       .query(
-        "select u.nombre, u.nombre_invocador, u.image from usuarios as u, usuario_equipo as ue, equipos as e where e.id_equipo=? and e.id_equipo=ue.id_equipo and ue.id_usuario=u.id_usuario;",
+        "select u.id_usuario, u.nombre, u.nombre_invocador, u.image, ue.capitan from usuarios as u, usuario_equipo as ue, equipos as e where e.id_equipo=? and e.id_equipo=ue.id_equipo and ue.id_usuario=u.id_usuario;",
         [idEquipo]
       )
       .then(([fields, rows]) => {
