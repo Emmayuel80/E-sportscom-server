@@ -243,7 +243,7 @@ router.get(
   }
 );
 
-// kick player from team
+// kick player from team]
 router.delete("/kickPlayerFromTeam", authorize("jugador"), async (req, res) => {
   const { idEquipo, idJugador } = req.body;
   try {
@@ -277,5 +277,27 @@ router.get("/getEquipo/:idEquipo", authorize("jugador"), async (req, res) => {
     });
   }
 });
+
+// get equipos llenos de un capitan
+router.get(
+  "/getEquiposLlenosCapitan/",
+  authorize("jugador"),
+  async (req, res) => {
+    try {
+      const data = await Jugador.getEquiposCompletosDeCapitan(req.user.sub);
+      if (!data) {
+        res.status(404).json({
+          message: "El jugador no tiene equipos",
+        });
+      }
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json({
+        message: "Error al obtener los equipos del capitan",
+        error: error.toString(),
+      });
+    }
+  }
+);
 
 module.exports = router;

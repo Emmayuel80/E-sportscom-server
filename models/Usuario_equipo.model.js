@@ -136,4 +136,22 @@ UsuarioEquipo.delete = function (idUsuario, idEquipo, nombreEquipo) {
       });
   });
 };
+
+UsuarioEquipo.getEquiposDeCapitan = function (idUsuario) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "SELECT id_equipo FROM usuario_equipo WHERE id_usuario = ? AND capitan = 1",
+        [idUsuario]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 module.exports = UsuarioEquipo;

@@ -286,4 +286,31 @@ Jugador.registerTeamToTournament = async function (
     return { msg: "Equipo registrado" };
   } else throw new Error("El torneo no es de League of Legends");
 };
+
+// get the teams from the captain that are full
+Jugador.getEquiposCompletosDeCapitan = async function (idUsuario) {
+  const equipos = await UsuarioEquipo.getEquiposDeCapitan(idUsuario);
+  const promises = [];
+  return new Promise((resolve, reject) => {
+    const listaEquipos = [];
+    if (!equipos) reject(new Error("El Jugador no tiene equipos").toString());
+    equipos.forEach((element) => {
+      promises.push(
+        UsuarioEquipo.getTotalJugadoresEquipo(element.id_equipo)
+          .then((total) => {
+            if (total === 5) {
+              return Equipos.getById(element.id_equipo);
+            }
+          })
+          .then((equipo) => {
+            if (equipo) {
+              listaEquipos.push(equipo);
+            }
+          })
+      );
+    });
+    Promise.all(promises).then(() => resolve(listaEquipos));
+  });
+};
+
 module.exports = Jugador;
