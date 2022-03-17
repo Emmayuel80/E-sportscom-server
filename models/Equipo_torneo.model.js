@@ -68,7 +68,7 @@ EquipoTorneo.getTotalEquipos = (idequipo) => {
     dbConn
       .promise()
       .query(
-        "select count(*) as total from new_esportscom.equipo_torneo where id_torneo=?",
+        "select count(*) as total from equipo_torneo where id_torneo=?",
         idequipo
       )
       .then(([fields, rows]) => {
