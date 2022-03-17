@@ -267,6 +267,18 @@ Jugador.registerTeamToTournament = async function (
   );
   if (totalJugadoresEquipo.total < 5)
     throw new Error("El equipo no tiene la cantidad de jugadores requerida");
+  // check if someone in the team is already registered
+  const jugadores = await Equipos.getPlayersInfo(idEquipo);
+  const jugadoresTorneo = await Torneos.getInfoEquipos(idTorneo);
+  const jugadoresTorneoIds = jugadoresTorneo.map(
+    (jugador) => jugador.id_usuario
+  );
+  const jugadoresIds = jugadores.map((jugador) => jugador.id_usuario);
+  const jugadoresEnTorneo = jugadoresIds.filter((id) =>
+    jugadoresTorneoIds.includes(id)
+  );
+  if (jugadoresEnTorneo.length > 0)
+    throw new Error("Alguno de los jugadores ya esta registrado en el torneo.");
   // register the team
   if (torneo.id_juego === 1) {
     // League of Legends
