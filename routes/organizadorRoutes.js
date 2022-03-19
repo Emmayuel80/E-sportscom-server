@@ -23,14 +23,16 @@ router.post("/createTournament", authorize("organizador"), async (req, res) => {
   if (activeTournaments[0].numero > 5) {
     res
       .status(422)
-      .json({ msg: "Solo se pueden tener un maximo de 5 torneos activos" });
+      .json({ err: "Solo se pueden tener un maximo de 5 torneos activos" });
   } else {
     Torneos.create(newTornament, req.user.sub)
       .then((data) => {
         res.status(200).json({ msg: "Tornament created" });
       })
       .catch((err) => {
-        res.status(500).json({ msg: "Error al crear el torneo", err: err });
+        res
+          .status(500)
+          .json({ msg: "Error al crear el torneo", err: err.toString() });
       });
   }
 });

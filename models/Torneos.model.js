@@ -225,7 +225,7 @@ Torneos.cancel = function (idTorneo, idUsuario, torneo) {
     dbConn
       .promise()
       .query(
-        "UPDATE torneos SET `id_estado` = '5' WHERE (`id_torneo` = ?);",
+        "UPDATE torneos SET `id_estado` = '4' WHERE (`id_torneo` = ?);",
         idTorneo
       )
       .then(async ([fields, rows]) => {
@@ -276,7 +276,7 @@ Torneos.getInfoEquipos = function (idTorneo) {
     dbConn
       .promise()
       .query(
-        "select j.email, j.nombre, j.nombre_invocador, j.image, et.posicion, e.nombre as equipo from usuarios as j, usuario_equipo as ue, equipos as e, equipo_torneo as et, torneos as t where t.id_torneo=? and t.id_torneo=et.id_torneo and et.id_equipo=e.id_equipo and e.id_equipo=ue.id_equipo and ue.id_usuario=j.id_usuario;",
+        "select j.id_usuario, j.email, j.nombre, j.nombre_invocador, j.image, et.posicion, e.nombre as equipo, e.logo from usuarios as j, usuario_equipo as ue, equipos as e, equipo_torneo as et, torneos as t where t.id_torneo=? and t.id_torneo=et.id_torneo and et.id_equipo=e.id_equipo and e.id_equipo=ue.id_equipo and ue.id_usuario=j.id_usuario;",
         idTorneo
       )
       .then(([fields, rows]) => {
@@ -353,6 +353,21 @@ Torneos.getTotalTorneoByName = function (nombre) {
       )
       .then(([fields, rows]) => {
         resolve(fields[0].numero);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+// get torneo by code_torneo
+Torneos.getTorneoByCode = function (code) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("select * from torneos where codigo_torneo=?", [code])
+      .then(([fields, rows]) => {
+        resolve(fields[0]);
       })
       .catch((err) => {
         reject(err);
