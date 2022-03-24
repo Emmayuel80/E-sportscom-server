@@ -4,6 +4,7 @@ const saltRounds = 5;
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
 const leagueJS = require("../config/riotApi");
+const apiConstants = require("twisted").Constants;
 // Usuario object create
 const Usuario = function (usuario) {
   this.nombre = usuario.username;
@@ -104,9 +105,12 @@ Usuario.findAll = function () {
 // Permite editar el perfil del usuario (jugador o organizador)
 Usuario.updateProfile = function (id, request) {
   return new Promise((resolve, reject) => {
-    leagueJS.Summoner.gettingByName(request.nombre_invocador)
-      .then((summoner) => {
-        request.image = `https://cdn.communitydragon.org/12.3.1/profile-icon/${summoner.profileIconId}`;
+    leagueJS.Summoner.getByName(
+      request.nombre_invocador,
+      apiConstants.Regions.LAT_NORTH
+    )
+      .then(({ response }) => {
+        request.image = `https://cdn.communitydragon.org/12.3.1/profile-icon/${response.profileIconId}`;
         return dbConn
           .promise()
           .query(

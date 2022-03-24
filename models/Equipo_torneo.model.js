@@ -80,4 +80,40 @@ EquipoTorneo.getTotalEquipos = (idequipo) => {
   });
 };
 
+EquipoTorneo.getTorneosGanados = (idUsuario) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `select count(*) as total from usuarios as u, usuario_equipo as ue, equipos as e, equipo_torneo as et, torneos as t 
+      where u.id_usuario=? and u.id_usuario=ue.id_usuario and ue.id_equipo=e.id_equipo and e.id_equipo=et.id_equipo and et.id_torneo=t.id_torneo and et.posicion=1 and t.id_estado=3;`,
+        [idUsuario]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields[0].total);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+EquipoTorneo.getTorneosParticipados = (idUsuario) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `select count(*) as total from usuarios as u, usuario_equipo as ue, equipos as e, equipo_torneo as et, torneos as t 
+      where u.id_usuario=? and u.id_usuario=ue.id_usuario and ue.id_equipo=e.id_equipo and e.id_equipo=et.id_equipo and et.id_torneo=t.id_torneo;`,
+        [idUsuario]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields[0].total);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 module.exports = EquipoTorneo;

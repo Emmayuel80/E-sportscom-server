@@ -157,4 +157,19 @@ Equipos.getPlayersInfo = function (idEquipo) {
   });
 };
 
+// delete team
+Equipos.delete = function (idEquipo) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("DELETE FROM equipos WHERE id_equipo = ?", [idEquipo])
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 module.exports = Equipos;

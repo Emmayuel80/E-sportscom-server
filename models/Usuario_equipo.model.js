@@ -105,7 +105,12 @@ UsuarioEquipo.getCapitanEquipo = function (idEquipo) {
 };
 
 // delete player from team
-UsuarioEquipo.delete = function (idUsuario, idEquipo, nombreEquipo) {
+UsuarioEquipo.delete = function (
+  idUsuario,
+  idEquipo,
+  nombreEquipo,
+  kicked = true
+) {
   return new Promise((resolve, reject) => {
     dbConn
       .promise()
@@ -120,14 +125,18 @@ UsuarioEquipo.delete = function (idUsuario, idEquipo, nombreEquipo) {
         const newBitacoraEquipo = new BitacoraEquipo({
           id_usuario: capitan.id_usuario,
           id_equipo: idEquipo,
-          desc_modificacion: `El jugador ${usuario[0].nombre} ha sido expulsado del equipo`,
+          desc_modificacion: kicked
+            ? `El jugador ${usuario[0].nombre} ha sido expulsado del equipo`
+            : `El jugador ${usuario[0].nombre} ha abandonado el equipo`,
         });
         await BitacoraEquipo.create(newBitacoraEquipo);
         require("../services/sendUpdateJugadorMail")(
           usuario[0].email,
           usuario[0].nombre,
           `el equipo ${nombreEquipo.nombre}`,
-          `<b>Has sido explusado del equipo</b>`
+          kicked
+            ? `<b>Has sido explusado del equipo</b>`
+            : `<b>Has abandonado el equipo</b>`
         );
         resolve({ msg: "UsuarioEquipo eliminado" });
       })

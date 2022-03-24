@@ -300,4 +300,52 @@ router.get(
   }
 );
 
+// delete player from team
+router.delete(
+  "/deletePlayerFromTeam",
+  authorize("jugador"),
+  async (req, res) => {
+    const { idEquipo, idJugador } = req.body;
+    try {
+      await Jugador.deletePlayerFromTeam(req.user.sub, idEquipo, idJugador);
+      res.status(200).json({
+        message: "Jugador eliminado del equipo",
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Error al eliminar al jugador del equipo",
+        error: error.toString(),
+      });
+    }
+  }
+);
+
+// get profile
+router.get("/getProfile", authorize("jugador"), async (req, res) => {
+  try {
+    const data = await Jugador.getProfile(req.user.sub);
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al obtener el perfil",
+      error: error.toString(),
+    });
+  }
+});
+
+// update profile
+router.put("/actualizarRiotApi", authorize("jugador"), async (req, res) => {
+  try {
+    const data = await Jugador.actualizarRiotApi(req.user.sub);
+    res.status(200).json({
+      message: "Perfil actualizado",
+      data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al actualizar el perfil",
+      error: error.toString(),
+    });
+  }
+});
 module.exports = router;

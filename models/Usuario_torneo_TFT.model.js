@@ -176,4 +176,40 @@ UsuarioTorneoTFT.getAllfromUsuario = (idUsuario) => {
       });
   });
 };
+
+UsuarioTorneoTFT.getTorneosGanados = (idUsuario) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `select count(*) as total from usuarios as u, usuario_torneo_tft as ut, torneos as t
+    where u.id_usuario=? and u.id_usuario=ut.id_usuario and ut.id_torneo=t.id_torneo and t.id_estado=3 and ut.posicion=1`,
+        [idUsuario]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields[0].total);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+UsuarioTorneoTFT.getTorneosParticipados = (idUsuario) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `select count(*) as total from usuarios as u, usuario_torneo_tft as ut, torneos as t
+      where u.id_usuario=? and u.id_usuario=ut.id_usuario and ut.id_torneo=t.id_torneo`,
+        [idUsuario]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields[0].total);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
 module.exports = UsuarioTorneoTFT;

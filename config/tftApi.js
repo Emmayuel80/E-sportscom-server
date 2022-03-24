@@ -1,6 +1,6 @@
 process.env.LEAGUE_API_PLATFORM_ID = "la1";
-const LolApi = require("twisted").LolApi;
-const leagueJs = new LolApi({
+const TftApi = require("twisted").TftApi;
+const leagueJs = new TftApi({
   /**
    * If api response is 429 (rate limits) try reattempt after needed time (default true)
    */
@@ -17,7 +17,7 @@ const leagueJs = new LolApi({
   /**
    * Riot games api key
    */
-  key: process.env.LEAGUE_API_KEY,
+  key: process.env.TFT_API_KEY,
   /**
    * Debug methods
    */

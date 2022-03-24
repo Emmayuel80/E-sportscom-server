@@ -8,6 +8,9 @@ const Equipos = require("./Equipos.model");
 const UsuarioEquipo = require("./Usuario_equipo.model");
 const EquipoTorneo = require("./Equipo_torneo.model");
 const BitacoraEquipo = require("./Bitacora_equipo.model");
+const leagueApi = require("../config/riotApi");
+const tftApi = require("../config/tftApi");
+const apiConstants = require("twisted").Constants;
 Jugador.getTorneosActivos = async function (start, number) {
   const torneos = await Torneos.getTorneosActivosNoPrivados(start, number);
   const total = await Torneos.getTotalTorneosActivosNoPrivados();
@@ -323,6 +326,85 @@ Jugador.getEquiposCompletosDeCapitan = async function (idUsuario) {
     });
     Promise.all(promises).then(() => resolve(listaEquipos));
   });
+};
+
+Jugador.deletePlayerFromTeam = async function (idJugador, idEquipo) {
+  const jugador = await UsuarioEquipo.getEquipoJugador(idJugador, idEquipo);
+  if (!jugador) throw new Error("El jugador no existe en el equipo");
+  if (jugador.capitan) throw new Error("El jugador es capitan del equipo");
+  // kick the player
+  // get team name
+  const nombreEquipo = await Equipos.getNombre(idEquipo);
+  await UsuarioEquipo.delete(idJugador, idEquipo, nombreEquipo, false);
+};
+
+Jugador.getProfile = async function (idUsuario) {
+  const usuario = await Usuario.findById(idUsuario);
+  if (!usuario) throw new Error("El usuario no existe");
+  const torneosGanadosTFT = await UsuarioTorneoTFT.getTorneosGanados(idUsuario);
+  const torneosParticipadosTFT = await UsuarioTorneoTFT.getTorneosParticipados(
+    idUsuario
+  );
+  const torneosGanadosLOL = await EquipoTorneo.getTorneosGanados(idUsuario);
+  const torneosParticipadosLOL = await EquipoTorneo.getTorneosParticipados(
+    idUsuario
+  );
+  const data = {
+    usuario: usuario,
+    torneosGanadosTFT: torneosGanadosTFT,
+    torneosParticipadosTFT: torneosParticipadosTFT,
+    torneosGanadosLOL: torneosGanadosLOL,
+    torneosParticipadosLOL: torneosParticipadosLOL,
+  };
+  return data;
+};
+
+Jugador.actualizarRiotApi = async function (idUsuario) {
+  const usuario = await Usuario.findById(idUsuario);
+  if (!usuario) throw new Error("El usuario no existe");
+  if (!usuario[0].nombre_invocador)
+    throw new Error("El usuario no tiene nombre de invocador");
+  const summonerLOL = await leagueApi.Summoner.getByName(
+    usuario[0].nombre_invocador,
+    apiConstants.Regions.LAT_NORTH
+  );
+  console.log(summonerLOL);
+  const summonerLeagueLOL = await leagueApi.League.bySummoner(
+    summonerLOL.response.id,
+    apiConstants.Regions.LAT_NORTH
+  );
+  console.log(summonerLeagueLOL);
+  const masteryLOL = await leagueApi.Champion.masteryBySummoner(
+    summonerLOL.response.id,
+    apiConstants.Regions.LAT_NORTH
+  );
+  const summonerTFT = await tftApi.Summoner.getByName(
+    usuario[0].nombre_invocador,
+    apiConstants.Regions.LAT_NORTH
+  );
+  const summonerLeagueTFT = await tftApi.League.get(
+    summonerTFT.response.id,
+    apiConstants.Regions.LAT_NORTH
+  );
+  console.log(summonerLeagueTFT);
+  const data = {
+    summonerLevel: summonerLOL.response.summonerLevel,
+    leagueTFT: summonerLeagueTFT.response,
+    leagueLOL: summonerLeagueLOL.response,
+    masteryLOL: [
+      masteryLOL.response[0],
+      masteryLOL.response[1],
+      masteryLOL.response[2],
+    ],
+  };
+  console.log(data);
+  await dbConn
+    .promise()
+    .query(`UPDATE usuarios SET riot_api=? WHERE id_usuario = ?`, [
+      JSON.stringify(data),
+      idUsuario,
+    ]);
+  return data;
 };
 
 module.exports = Jugador;
