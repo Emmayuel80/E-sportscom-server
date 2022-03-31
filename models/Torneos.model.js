@@ -17,6 +17,7 @@ const Torneos = function (torneo) {
     torneo.no_equipos,
     torneo.no_enfrentamientos
   );
+  this.hora_inicio = torneo.hora_inicio;
   this.privado = torneo.privado;
   this.codigo_torneo = Torneos.generateCode(torneo.nombre);
   this.id_usuario = torneo.id_usuario;

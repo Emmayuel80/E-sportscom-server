@@ -28,12 +28,14 @@ UsuarioTorneoTFT.getJugadoresTorneo = (idTorneo) => {
       .promise()
       .query(
         `SELECT j.id_usuario,
+        j.email,
         j.nombre,
         j.image,
         u.puntaje_jugador,
         u.no_enfrentamientos_jugados,
         u.total_damage,
-        u.posicion
+        u.posicion,
+        j.nombre_invocador
  FROM   usuarios AS j,
         usuario_torneo_TFT AS u
  WHERE  j.id_usuario = u.id_usuario

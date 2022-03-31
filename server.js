@@ -25,11 +25,16 @@ app.use(logger("dev"));
 
 // STARTUP TASKS
 require("./daemons/startup")();
+require("./daemons/checkFechaInicioTorneo")();
 
 // DAEMON SCHEDULING
 const cron = require("node-cron");
 cron.schedule("0 4 * * *", () => {
   require("./daemons/startup")();
+});
+
+cron.schedule("0 * * * *", () => {
+  require("./daemons/checkFechaInicioTorneo")();
 });
 
 // ROUTES

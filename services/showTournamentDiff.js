@@ -1,3 +1,4 @@
+/* eslint-disable */
 module.exports = function (torneo, oldTorneo) {
   let descModificacion = "";
   if (torneo.nombre !== oldTorneo.nombre) {
@@ -40,6 +41,15 @@ module.exports = function (torneo, oldTorneo) {
   if (torneo.privado != oldTorneo.privado) {
     descModificacion +=
       "Privado: " + oldTorneo.privado + " → " + torneo.privado + ";\n ";
+  }
+
+  if (torneo.hora_inicio !== oldTorneo.hora_inicio) {
+    descModificacion +=
+      "Hora inicio: " +
+      oldTorneo.hora_inicio +
+      " → " +
+      torneo.hora_inicio +
+      ";\n ";
   }
   return descModificacion;
 };
