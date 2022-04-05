@@ -407,4 +407,39 @@ Jugador.actualizarRiotApi = async function (idUsuario) {
   return data;
 };
 
+// get enfrentamientos TFT pendientes de jugar
+Jugador.getEnfrentamientosTFT = async function (idTorneo, idUsuario) {
+  const enfrentamientos = await UsuarioTorneoTFT.getEnfrentamientosTFT(
+    idTorneo
+  );
+  if (enfrentamientos.length === 0) {
+    throw new Error("El jugador no tiene enfrentamientos pendientes");
+  }
+  const usuario = await Usuario.findById(idUsuario);
+  if (!usuario) throw new Error("El usuario no existe");
+  const promises = [];
+  return new Promise((resolve, reject) => {
+    const listaEnfrentamientos = [];
+    if (!enfrentamientos)
+      reject(
+        new Error("El Jugador no tiene enfrentamientos pendientes").toString()
+      );
+    // Recorremos cada enfrentamiento
+    enfrentamientos.forEach((element) => {
+      const players = JSON.parse(element.json_data);
+      // Recorremos la list de jugadores para verificar que el jugador tiene un enfrentamiento pendiente
+      for (let i = 0; i < players.players.length; i++) {
+        if (
+          players.players[i].nombre_invocador === usuario[0].nombre_invocador
+        ) {
+          element.json_data = players;
+          listaEnfrentamientos.push(element);
+          break;
+        }
+      }
+    });
+    Promise.all(promises).then(() => resolve(listaEnfrentamientos));
+  });
+};
+
 module.exports = Jugador;

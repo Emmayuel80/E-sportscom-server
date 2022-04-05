@@ -348,4 +348,31 @@ router.put("/actualizarRiotApi", authorize("jugador"), async (req, res) => {
     });
   }
 });
+
+// get enfrentamiento TFT
+router.get(
+  "/getEnfrentamientos/:idTorneo",
+  authorize("jugador"),
+  async (req, res) => {
+    const { idTorneo } = req.params;
+    try {
+      const data = await Jugador.getEnfrentamientosTFT(idTorneo, req.user.sub);
+      if (!data) {
+        res.status(404).json({
+          message: "El Torneo no existe",
+        });
+      }
+      const dataResponse = {
+        enfrentamientos: data,
+        idTorneo: idTorneo,
+      };
+      res.status(200).json(dataResponse);
+    } catch (error) {
+      res.status(500).json({
+        message: "Error al obtener los enfrentamientos TFT del jugador",
+        error: error.toString(),
+      });
+    }
+  }
+);
 module.exports = router;
