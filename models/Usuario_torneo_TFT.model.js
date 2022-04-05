@@ -51,6 +51,36 @@ UsuarioTorneoTFT.getJugadoresTorneo = (idTorneo) => {
   });
 };
 
+UsuarioTorneoTFT.getJugadoresNoEliminados = (idTorneo) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `SELECT j.id_usuario,
+        j.email,
+        j.nombre,
+        j.image,
+        u.puntaje_jugador,
+        u.no_enfrentamientos_jugados,
+        u.total_damage,
+        u.posicion,
+        j.nombre_invocador
+ FROM   usuarios AS j,
+        usuario_torneo_TFT AS u
+ WHERE  j.id_usuario = u.id_usuario
+        AND u.eliminado = FALSE
+        AND u.id_torneo = ?`,
+        idTorneo
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 UsuarioTorneoTFT.getCountJugadoresTorneo = (idTorneo) => {
   return new Promise((resolve, reject) => {
     dbConn

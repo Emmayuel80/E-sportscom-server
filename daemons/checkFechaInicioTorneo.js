@@ -13,7 +13,7 @@ module.exports = async function () {
       d.setTime(
         d.getTime() +
           d.getTimezoneOffset() * 60 * 1000 /* convert to UTC */ +
-          /* UTC-6 */ -6 * 60 * 60 * 1000
+          /* UTC-5 */ -5 * 60 * 60 * 1000
       );
       if (torneo.hora_inicio !== d.getHours()) {
         return;
@@ -24,10 +24,11 @@ module.exports = async function () {
       } else {
         // TFT
         console.log("[DAEMON] Iniciando torneo TFT");
-        const participantes = await UsuarioTorneoTFT.getJugadoresTorneo(
+        const participantes = await UsuarioTorneoTFT.getJugadoresNoEliminados(
           torneo.id_torneo
         );
-        if (participantes.length !== torneo.no_equipos) {
+        // check if participantes length is a multiple of 8
+        if (participantes.length % 8 !== 0) {
           return;
         }
         const rr = new RoundRobin({
@@ -39,7 +40,7 @@ module.exports = async function () {
         const [fields] = await dbConn
           .promise()
           .query(
-            "SELECT * FROM enfrentamiento_tft where id_torneo = ? and date(fecha_creado)= date(NOW())",
+            "SELECT * FROM enfrentamiento_tft where id_torneo = ? and id_riot_match is null",
             torneo.id_torneo
           );
         if (fields.length > 0) {
