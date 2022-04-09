@@ -375,4 +375,26 @@ router.get(
     }
   }
 );
+
+// fetch enfrentamiento results
+router.get(
+  "/getEnfrentamientosResultados/:idEnfrentamiento",
+  authorize("jugador"),
+  async (req, res) => {
+    const { idEnfrentamiento } = req.params;
+    try {
+      const data = await Jugador.registerTFTMatch(
+        req.user.sub,
+        idEnfrentamiento
+      );
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json({
+        message: "Error al obtener los resultados del enfrentamiento",
+        error: error.toString(),
+      });
+    }
+  }
+);
+
 module.exports = router;

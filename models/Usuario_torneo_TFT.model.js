@@ -1,6 +1,7 @@
 const dbConn = require("../config/database");
 const Usuario = require("../models/Usuario.model.js");
 const BitacoraTorneo = require("./Bitacora_torneo.model");
+const Torneos = require("./Torneos.model");
 const UsuarioTorneoTFT = function (usuario) {
   this.id_usuario = usuario.id_usuario;
   this.id_torneo = usuario.id_torneo;
@@ -64,7 +65,8 @@ UsuarioTorneoTFT.getJugadoresNoEliminados = (idTorneo) => {
         u.no_enfrentamientos_jugados,
         u.total_damage,
         u.posicion,
-        j.nombre_invocador
+        j.nombre_invocador,
+        j.riot_api
  FROM   usuarios AS j,
         usuario_torneo_TFT AS u
  WHERE  j.id_usuario = u.id_usuario
@@ -73,6 +75,10 @@ UsuarioTorneoTFT.getJugadoresNoEliminados = (idTorneo) => {
         idTorneo
       )
       .then(([fields, rows]) => {
+        // parse riot_api
+        fields.forEach((element) => {
+          element.riot_api = JSON.parse(element.riot_api);
+        });
         resolve(fields);
       })
       .catch((err) => {
@@ -113,7 +119,8 @@ UsuarioTorneoTFT.getJugadorTorneo = (idTorneo, idUsuario) => {
         u.puntaje_jugador,
         u.no_enfrentamientos_jugados,
         u.total_damage,
-        u.posicion
+        u.posicion,
+        u.eliminado
  FROM   usuarios AS j,
         usuario_torneo_TFT AS u
  WHERE  j.id_usuario = u.id_usuario
@@ -254,6 +261,99 @@ UsuarioTorneoTFT.getEnfrentamientosTFT = (idTorneo) => {
         [idTorneo]
       )
       .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+UsuarioTorneoTFT.update = async (idTorneo, idUsuario, riotApi) => {
+  console.log("datos", idTorneo, idUsuario);
+  const jugador = await UsuarioTorneoTFT.getJugadorTorneo(idTorneo, idUsuario);
+  console.log(jugador);
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `UPDATE usuario_torneo_TFT SET puntaje_jugador=?, no_enfrentamientos_jugados=?, total_damage=? WHERE id_torneo = ? AND id_usuario = ?`,
+        [
+          jugador[0].puntaje_jugador + (9 - riotApi.placement),
+          jugador[0].no_enfrentamientos_jugados++,
+          jugador[0].total_damage + riotApi.total_damage_to_players,
+          idTorneo,
+          idUsuario,
+        ]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+UsuarioTorneoTFT.eliminarJugadores = async (idTorneo) => {
+  const jugadores = await UsuarioTorneoTFT.getPosicionJugadoresNoEliminados(
+    idTorneo
+  );
+  if (jugadores.length <= 8) {
+    // finalizar torneo
+    await Torneos.updateEstado(idTorneo, 3);
+  } else {
+    // eliminar jugadores
+    for (let i = jugadores.length / 2 - 1; i < jugadores.length; i++) {
+      await UsuarioTorneoTFT.eliminarJugador(idTorneo, jugadores[i].id_usuario);
+    }
+  }
+};
+
+UsuarioTorneoTFT.getPosicionJugadores = (idTorneo) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `SELECT * FROM usuario_torneo_tft where id_torneo=? order by puntaje_jugador asc, total_damage desc;`,
+        [idTorneo]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+UsuarioTorneoTFT.getPosicionJugadoresNoEliminados = (idTorneo) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `SELECT * FROM usuario_torneo_tft where id_torneo=? and eliminado=0 order by puntaje_jugador asc, total_damage desc;`,
+        [idTorneo]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+UsuarioTorneoTFT.eliminarJugador = async (idTorneo, idUsuario) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `UPDATE usuario_torneo_tft SET eliminado=1 WHERE id_torneo = ? AND id_usuario = ?`,
+        [idTorneo, idUsuario]
+      )
+      .then(([fields, rows]) => {
+        // TODO: mandar correos
         resolve(fields);
       })
       .catch((err) => {

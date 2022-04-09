@@ -10,6 +10,7 @@ const EquipoTorneo = require("./Equipo_torneo.model");
 const BitacoraEquipo = require("./Bitacora_equipo.model");
 const leagueApi = require("../config/riotApi");
 const tftApi = require("../config/tftApi");
+const EnfrentamientoTft = require("./Enfrentamiento_tft.model");
 const apiConstants = require("twisted").Constants;
 Jugador.getTorneosActivos = async function (start, number) {
   const torneos = await Torneos.getTorneosActivosNoPrivados(start, number);
@@ -389,6 +390,10 @@ Jugador.actualizarRiotApi = async function (idUsuario) {
   console.log(summonerLeagueTFT);
   const data = {
     summonerLevel: summonerLOL.response.summonerLevel,
+    idLOL: summonerLOL.response.id,
+    idTFT: summonerTFT.response.id,
+    puuidLOL: summonerLOL.response.puuid,
+    puuidTFT: summonerTFT.response.puuid,
     leagueTFT: summonerLeagueTFT.response,
     leagueLOL: summonerLeagueLOL.response,
     masteryLOL: [
@@ -397,7 +402,7 @@ Jugador.actualizarRiotApi = async function (idUsuario) {
       masteryLOL.response[2],
     ],
   };
-  console.log(data);
+
   await dbConn
     .promise()
     .query(`UPDATE usuarios SET riot_api=? WHERE id_usuario = ?`, [
@@ -440,6 +445,72 @@ Jugador.getEnfrentamientosTFT = async function (idTorneo, idUsuario) {
     });
     Promise.all(promises).then(() => resolve(listaEnfrentamientos));
   });
+};
+
+Jugador.registerTFTMatch = async function (idUsuario, idEnfrentamiento) {
+  const enfrentamiento = await EnfrentamientoTft.findById(idEnfrentamiento);
+  if (!enfrentamiento) throw new Error("El enfrentamiento no existe");
+  const usuario = await Usuario.findById(idUsuario);
+  if (!usuario) throw new Error("El usuario no existe");
+  if (usuario[0].id_usuario !== enfrentamiento.json_data.captain.id_usuario)
+    throw new Error("El usuario no es capitan del enfrentamiento");
+  const idTorneo = enfrentamiento.id_torneo;
+  const torneo = await Torneos.getById(idTorneo);
+  if (torneo.id_estado !== 2) throw new Error("El torneo no esta en progreso.");
+  if (enfrentamiento.id_riot_match)
+    throw new Error("El enfrentamiento ya esta jugado");
+  usuario[0].riot_api = JSON.parse(usuario[0].riot_api);
+  const matchList = await tftApi.Match.listWithDetails(
+    usuario[0].riot_api.puuidTFT,
+    "americas"
+  );
+  let matchFound = null;
+  // compare participantes
+  const enfrentamientoJson = { ...enfrentamiento.json_data };
+
+  matchList.forEach((match) => {
+    const matchIds = match.metadata.participants;
+    const enfrentamientoIds = enfrentamiento.json_data.players.map(
+      (participante) => {
+        return participante.riot_api.puuidTFT;
+      }
+    );
+    // order arrays
+    matchIds.sort();
+    enfrentamientoIds.sort();
+    // see if match ids are the same
+    if (JSON.stringify(matchIds) === JSON.stringify(enfrentamientoIds)) {
+      enfrentamiento.id_riot_match = match.metadata.match_id;
+      enfrentamiento.fecha_jugada = new Date(match.info.game_datetime);
+      matchFound = match;
+    }
+  });
+  // console.log(enfrentamiento);
+  EnfrentamientoTft.update(idEnfrentamiento, enfrentamiento);
+  // Codigo de hoy
+  // console.log(enfrentamiento.json_data.players);
+  enfrentamientoJson.players.sort((a, b) => {
+    return a.riot_api.puuidTFT - b.riot_api.puuidTFT;
+  });
+  matchFound.info.participants.sort((a, b) => {
+    return a.puuid - b.puuid;
+  });
+  for (let i = 0; i < enfrentamientoJson.players.length; i++) {
+    await UsuarioTorneoTFT.update(
+      idTorneo,
+      enfrentamientoJson.players[i].id_usuario,
+      matchFound.info.participants[i]
+    );
+  }
+  const enfrentamientosSinJugar =
+    await EnfrentamientoTft.getEnfrentamientosSinJugar(idTorneo);
+  console.log("enfrentamientos sin jugar", enfrentamientosSinJugar.length);
+  if (enfrentamientosSinJugar.length === 0) {
+    await UsuarioTorneoTFT.eliminarJugadores(idTorneo);
+  }
+
+  // termina codigo de hoy
+  return matchFound;
 };
 
 module.exports = Jugador;

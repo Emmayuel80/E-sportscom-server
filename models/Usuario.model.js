@@ -225,4 +225,20 @@ Usuario.updateProfileImage = function (nombreInvocador, idUsuario) {
   });
 };
 
+// Metodo para encontrar un jugador por puuid de TFT o LOL
+Usuario.findByPuuid = function (puuid) {
+  return new Promise((resolve, reject) => {
+    puuid = "%" + puuid + "%";
+    dbConn
+      .promise()
+      .query("SELECT * FROM usuarios WHERE riot_api like ?", puuid)
+      .then(([fields, rows]) => {
+        resolve(fields[0]);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 module.exports = Usuario;

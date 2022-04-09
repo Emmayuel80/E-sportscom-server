@@ -376,4 +376,21 @@ Torneos.getTorneoByCode = function (code) {
   });
 };
 
+Torneos.updateEstado = function (idTorneo, idEstado) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("UPDATE torneos SET `id_estado` = ? WHERE (`id_torneo` = ?);", [
+        idEstado,
+        idTorneo,
+      ])
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 module.exports = Torneos;
