@@ -486,7 +486,7 @@ Jugador.registerTFTMatch = async function (idUsuario, idEnfrentamiento) {
     }
   });
   // console.log(enfrentamiento);
-  EnfrentamientoTft.update(idEnfrentamiento, enfrentamiento);
+  EnfrentamientoTft.update(idEnfrentamiento, enfrentamiento, torneo);
   // Codigo de hoy
   // console.log(enfrentamiento.json_data.players);
   enfrentamientoJson.players.sort((a, b) => {
@@ -504,9 +504,9 @@ Jugador.registerTFTMatch = async function (idUsuario, idEnfrentamiento) {
   }
   const enfrentamientosSinJugar =
     await EnfrentamientoTft.getEnfrentamientosSinJugar(idTorneo);
-  console.log("enfrentamientos sin jugar", enfrentamientosSinJugar.length);
+
   if (enfrentamientosSinJugar.length === 0) {
-    await UsuarioTorneoTFT.eliminarJugadores(idTorneo);
+    await UsuarioTorneoTFT.eliminarJugadores(torneo);
   }
 
   // termina codigo de hoy

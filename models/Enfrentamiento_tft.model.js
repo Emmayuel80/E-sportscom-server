@@ -1,4 +1,5 @@
 const dbConn = require("../config/database");
+const BitacoraTorneo = require("./Bitacora_torneo.model");
 const EnfrentamientoTft = function () {};
 
 // find by id
@@ -21,7 +22,7 @@ EnfrentamientoTft.findById = function (id) {
 };
 
 // update
-EnfrentamientoTft.update = function (id, data) {
+EnfrentamientoTft.update = function (id, data, torneo) {
   return new Promise((resolve, reject) => {
     data.json_data = JSON.stringify(data.json_data);
     dbConn
@@ -31,6 +32,13 @@ EnfrentamientoTft.update = function (id, data) {
         id,
       ])
       .then(([fields, rows]) => {
+        // Inserta la creacion en la bitacora
+        const newBitacoraTorneo = new BitacoraTorneo({
+          id_torneo: torneo.id_torneo,
+          id_usuario: torneo.id_usuario,
+          desc_modificacion: `Se jugó el enfrentamiento ${id} del torneo ${torneo.nombre} con ID ${torneo.id_torneo}.`,
+        });
+        BitacoraTorneo.create(newBitacoraTorneo);
         resolve(fields);
       })
       .catch((err) => {

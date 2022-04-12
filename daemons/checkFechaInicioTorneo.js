@@ -1,11 +1,15 @@
 const dbConn = require("../config/database");
 const RoundRobin = require("../services/tournaments/RoundRobin");
 const UsuarioTorneoTFT = require("../models/Usuario_torneo_TFT.model");
+const Torneos = require("../models/Torneos.model");
+const BitacoraTorneo = require("../models/Bitacora_torneo.model");
 module.exports = async function () {
   console.log("[DAEMON] Check fecha inicio torneos");
   const [fields] = await dbConn
     .promise()
-    .query("SELECT * FROM torneos WHERE fecha_inicio <= NOW() AND id_estado=1");
+    .query(
+      "SELECT * FROM torneos WHERE fecha_inicio <= NOW() AND id_estado=1 OR id_estado=2"
+    );
   const torneosIniciados = fields;
   if (torneosIniciados.length > 0) {
     torneosIniciados.forEach(async (torneo) => {
@@ -45,6 +49,15 @@ module.exports = async function () {
           );
         if (fields.length > 0) {
           return;
+        }
+        if (torneo.id_estado === 1) {
+          Torneos.updateEstado(torneo.id_torneo, 2);
+          const newBitacoraTorneo = new BitacoraTorneo({
+            id_torneo: torneo.id_torneo,
+            id_usuario: torneo.id_usuario,
+            desc_modificacion: `Se ha iniciado el torneo: ${torneo.nombre}.`,
+          });
+          BitacoraTorneo.create(newBitacoraTorneo);
         }
         rr.matches.forEach((match) => {
           const nombresInvocador = [];

@@ -270,9 +270,7 @@ UsuarioTorneoTFT.getEnfrentamientosTFT = (idTorneo) => {
 };
 
 UsuarioTorneoTFT.update = async (idTorneo, idUsuario, riotApi) => {
-  console.log("datos", idTorneo, idUsuario);
   const jugador = await UsuarioTorneoTFT.getJugadorTorneo(idTorneo, idUsuario);
-  console.log(jugador);
   return new Promise((resolve, reject) => {
     dbConn
       .promise()
@@ -295,18 +293,40 @@ UsuarioTorneoTFT.update = async (idTorneo, idUsuario, riotApi) => {
   });
 };
 
-UsuarioTorneoTFT.eliminarJugadores = async (idTorneo) => {
+UsuarioTorneoTFT.eliminarJugadores = async (torneo) => {
   const jugadores = await UsuarioTorneoTFT.getPosicionJugadoresNoEliminados(
-    idTorneo
+    torneo.id_torneo
   );
   if (jugadores.length <= 8) {
     // finalizar torneo
-    await Torneos.updateEstado(idTorneo, 3);
+    await Torneos.updateEstado(torneo.id_torneo, 3);
+    // actualizar bitacora
+    const newBitacoraTorneo = new BitacoraTorneo({
+      id_torneo: torneo.id_torneo,
+      id_usuario: torneo.id_usuario,
+      desc_modificacion: `Se finalizó el torneo ${torneo.nombre}.`,
+    });
+    BitacoraTorneo.create(newBitacoraTorneo);
   } else {
     // eliminar jugadores
-    for (let i = jugadores.length / 2 - 1; i < jugadores.length; i++) {
-      await UsuarioTorneoTFT.eliminarJugador(idTorneo, jugadores[i].id_usuario);
+    const jugadoresEliminados = [];
+    for (let i = jugadores.length / 2; i < jugadores.length; i++) {
+      await UsuarioTorneoTFT.eliminarJugador(
+        torneo.id_torneo,
+        jugadores[i].id_usuario
+      );
+      jugadoresEliminados.push(jugadores[i]);
     }
+    const newBitacoraTorneo = new BitacoraTorneo({
+      id_torneo: torneo.id_torneo,
+      id_usuario: torneo.id_usuario,
+      desc_modificacion: `Se eliminaron los jugadores: ${jugadoresEliminados
+        .map((jugador) => {
+          return jugador.nombre;
+        })
+        .join(", ")} del torneo ${torneo.nombre}.`,
+    });
+    BitacoraTorneo.create(newBitacoraTorneo);
   }
 };
 
@@ -332,7 +352,7 @@ UsuarioTorneoTFT.getPosicionJugadoresNoEliminados = (idTorneo) => {
     dbConn
       .promise()
       .query(
-        `SELECT * FROM usuario_torneo_tft where id_torneo=? and eliminado=0 order by puntaje_jugador asc, total_damage desc;`,
+        `SELECT ut.*, u.nombre FROM usuario_torneo_tft as ut, usuarios as u where ut.id_torneo=? and ut.eliminado=0 and ut.id_usuario=u.id_usuario order by ut.puntaje_jugador desc, ut.total_damage desc;`,
         [idTorneo]
       )
       .then(([fields, rows]) => {
