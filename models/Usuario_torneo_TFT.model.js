@@ -36,11 +36,12 @@ UsuarioTorneoTFT.getJugadoresTorneo = (idTorneo) => {
         u.no_enfrentamientos_jugados,
         u.total_damage,
         u.posicion,
-        j.nombre_invocador
+        j.nombre_invocador,
+        u.eliminado
  FROM   usuarios AS j,
         usuario_torneo_TFT AS u
  WHERE  j.id_usuario = u.id_usuario
-        AND u.id_torneo = ?`,
+        AND u.id_torneo = ? order by u.puntaje_jugador desc, u.total_damage desc`,
         idTorneo
       )
       .then(([fields, rows]) => {

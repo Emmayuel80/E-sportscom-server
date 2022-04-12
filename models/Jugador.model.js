@@ -480,9 +480,11 @@ Jugador.registerTFTMatch = async function (idUsuario, idEnfrentamiento) {
     enfrentamientoIds.sort();
     // see if match ids are the same
     if (JSON.stringify(matchIds) === JSON.stringify(enfrentamientoIds)) {
-      enfrentamiento.id_riot_match = match.metadata.match_id;
-      enfrentamiento.fecha_jugada = new Date(match.info.game_datetime);
-      matchFound = match;
+      if (!matchFound) {
+        enfrentamiento.id_riot_match = match.metadata.match_id;
+        enfrentamiento.fecha_jugada = new Date(match.info.game_datetime);
+        matchFound = match;
+      }
     }
   });
   // console.log(enfrentamiento);
