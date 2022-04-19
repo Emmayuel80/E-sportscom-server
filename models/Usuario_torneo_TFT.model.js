@@ -178,7 +178,7 @@ UsuarioTorneoTFT.kickParticipante = (
         const newBitacoraTorneo = new BitacoraTorneo({
           id_torneo: idTorneo,
           id_usuario: idOrganizador,
-          desc_modificacion: "Se expulso al jugador: " + usuario[0].nombre,
+          desc_modificacion: "Se expulsó al jugador: " + usuario[0].nombre,
         });
         await BitacoraTorneo.create(newBitacoraTorneo);
         // send mail to participants

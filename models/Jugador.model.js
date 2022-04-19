@@ -165,8 +165,8 @@ Jugador.editEquipo = async function (idUsuario, equipo) {
     idUsuario,
     equipo.id_equipo
   );
-  if (!usuario) throw new Error("El jugador no es el capitan del equipo");
-  if (!usuario.capitan) throw new Error("El jugador no es capitan del equipo");
+  if (!usuario) throw new Error("El jugador no es el capitán del equipo");
+  if (!usuario.capitan) throw new Error("El jugador no es capitán del equipo");
   // update team
   const oldEquipo = await Equipos.getById(equipo.id_equipo);
   if (oldEquipo.nombre === equipo.nombre && oldEquipo.logo === equipo.logo)
@@ -222,12 +222,12 @@ Jugador.getTournamentsHistory = async function (idUsuario, start, number) {
 Jugador.kickPlayerFromTeam = async function (idUsuario, idEquipo, idJugador) {
   // check if the user is the captain of the team
   const usuario = await UsuarioEquipo.getEquipoJugador(idUsuario, idEquipo);
-  if (!usuario) throw new Error("El jugador no es el capitan del equipo");
-  if (!usuario.capitan) throw new Error("El jugador no es capitan del equipo");
+  if (!usuario) throw new Error("El jugador no es el capitán del equipo");
+  if (!usuario.capitan) throw new Error("El jugador no es capitán del equipo");
   // check if the user is the player to kick
   const jugador = await UsuarioEquipo.getEquipoJugador(idJugador, idEquipo);
   if (!jugador) throw new Error("El jugador no existe en el equipo");
-  if (jugador.capitan) throw new Error("El jugador es capitan del equipo");
+  if (jugador.capitan) throw new Error("El jugador es capitán del equipo");
   // kick the player
   // get team name
   const nombreEquipo = await Equipos.getNombre(idEquipo);
@@ -256,16 +256,16 @@ Jugador.registerTeamToTournament = async function (
   if (!equipo) throw new Error("El equipo no existe");
   const usuario = await UsuarioEquipo.getEquipoJugador(idUsuario, idEquipo);
   if (!usuario) throw new Error("El jugador no es parte del equipo");
-  if (!usuario.capitan) throw new Error("El jugador no es capitan del equipo");
+  if (!usuario.capitan) throw new Error("El jugador no es capitán del equipo");
   const torneo = await Torneos.getById(idTorneo);
   if (!torneo) throw new Error("El torneo no existe");
   // check if the tournament is already full
   const participantes = await EquipoTorneo.getTotalEquipos(idTorneo);
   if (participantes.total >= torneo.no_equipos)
-    throw new Error("El torneo ya esta lleno");
+    throw new Error("El torneo ya está lleno");
   // check if the tournament is on register state
   if (torneo.id_estado !== 0)
-    throw new Error("El torneo no esta en estado de registro");
+    throw new Error("El torneo no está en estado de registro");
   const totalJugadoresEquipo = await UsuarioEquipo.getTotalJugadoresEquipo(
     idEquipo
   );
@@ -282,7 +282,7 @@ Jugador.registerTeamToTournament = async function (
     jugadoresTorneoIds.includes(id)
   );
   if (jugadoresEnTorneo.length > 0)
-    throw new Error("Alguno de los jugadores ya esta registrado en el torneo.");
+    throw new Error("Algun jugador ya está registrado en el torneo.");
   // register the team
   if (torneo.id_juego === 1) {
     // League of Legends
@@ -309,7 +309,7 @@ Jugador.getEquiposCompletosDeCapitan = async function (idUsuario) {
   const promises = [];
   return new Promise((resolve, reject) => {
     const listaEquipos = [];
-    if (!equipos) reject(new Error("El Jugador no tiene equipos").toString());
+    if (!equipos) reject(new Error("El jugador no tiene equipos").toString());
     equipos.forEach((element) => {
       promises.push(
         UsuarioEquipo.getTotalJugadoresEquipo(element.id_equipo)
@@ -332,7 +332,7 @@ Jugador.getEquiposCompletosDeCapitan = async function (idUsuario) {
 Jugador.deletePlayerFromTeam = async function (idJugador, idEquipo) {
   const jugador = await UsuarioEquipo.getEquipoJugador(idJugador, idEquipo);
   if (!jugador) throw new Error("El jugador no existe en el equipo");
-  if (jugador.capitan) throw new Error("El jugador es capitan del equipo");
+  if (jugador.capitan) throw new Error("El jugador es capitán del equipo");
   // kick the player
   // get team name
   const nombreEquipo = await Equipos.getNombre(idEquipo);
@@ -427,7 +427,7 @@ Jugador.getEnfrentamientosTFT = async function (idTorneo, idUsuario) {
     const listaEnfrentamientos = [];
     if (!enfrentamientos)
       reject(
-        new Error("El Jugador no tiene enfrentamientos pendientes").toString()
+        new Error("El jugador no tiene enfrentamientos pendientes").toString()
       );
     // Recorremos cada enfrentamiento
     enfrentamientos.forEach((element) => {
@@ -453,12 +453,12 @@ Jugador.registerTFTMatch = async function (idUsuario, idEnfrentamiento) {
   const usuario = await Usuario.findById(idUsuario);
   if (!usuario) throw new Error("El usuario no existe");
   if (usuario[0].id_usuario !== enfrentamiento.json_data.captain.id_usuario)
-    throw new Error("El usuario no es capitan del enfrentamiento");
+    throw new Error("El usuario no es capitán del enfrentamiento");
   const idTorneo = enfrentamiento.id_torneo;
   const torneo = await Torneos.getById(idTorneo);
-  if (torneo.id_estado !== 2) throw new Error("El torneo no esta en progreso.");
+  if (torneo.id_estado !== 2) throw new Error("El torneo no está en progreso.");
   if (enfrentamiento.id_riot_match)
-    throw new Error("El enfrentamiento ya esta jugado");
+    throw new Error("El enfrentamiento ya está jugado");
   usuario[0].riot_api = JSON.parse(usuario[0].riot_api);
   const matchList = await tftApi.Match.listWithDetails(
     usuario[0].riot_api.puuidTFT,

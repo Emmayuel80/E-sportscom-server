@@ -118,7 +118,7 @@ Torneos.update = function (idTorneo, torneo, oldTorneo, idUsuario) {
           id_torneo: idTorneo,
           id_usuario: idUsuario,
           desc_modificacion:
-            "Se modifico el torneo: " +
+            "Se modificó el torneo: " +
             oldTorneo.nombre +
             " \nCambios realizados: " +
             changesString,
@@ -234,7 +234,7 @@ Torneos.cancel = function (idTorneo, idUsuario, torneo) {
         const newBitacoraTorneo = new BitacoraTorneo({
           id_torneo: idTorneo,
           id_usuario: idUsuario,
-          desc_modificacion: "Se cancelo el torneo: " + torneo.nombre,
+          desc_modificacion: "Se canceló el torneo: " + torneo.nombre,
         });
         await BitacoraTorneo.create(newBitacoraTorneo);
         try {
