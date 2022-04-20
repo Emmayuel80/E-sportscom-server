@@ -37,8 +37,26 @@ Equipos.getEmails = function (idEquipo) {
     dbConn
       .promise()
       .query(
-        "select u.email, u.nombre from usuarios as u, usuario_equipo as ue, equipos as e where e.id_equipo=? and e.id_equipo=ue.id_equipo and ue.id_usuario=u.id_usuario;",
+        "select u.email, u.nombre, e.nombre as nombreEquipo from usuarios as u, usuario_equipo as ue, equipos as e where e.id_equipo=? and e.id_equipo=ue.id_equipo and ue.id_usuario=u.id_usuario;",
         [idEquipo]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+// get mails from teams
+Equipos.getEmailsFromTeams = function (idEquipos) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select u.nombre_invocador, u.email from usuarios as u, usuario_equipo as ue, equipos as e where u.id_usuario=ue.id_usuario and ue.id_equipo=e.id_equipo and e.id_equipo in (?)",
+        [idEquipos]
       )
       .then(([fields, rows]) => {
         resolve(fields);

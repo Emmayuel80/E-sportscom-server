@@ -6,6 +6,8 @@ const EquipoTorneo = require("../models/Equipo_torneo.model");
 const BitacoraTorneo = require("../models/Bitacora_torneo.model");
 const Elimination = require("../services/tournaments/Elimination");
 const PartidaLol = require("../models/Partida_lol.model");
+const Usuario = require("../models/Usuario.model");
+const Equipos = require("../models/Equipos.model");
 /* eslint-disable */
 module.exports = async function () {
   console.log("[DAEMON] Check fecha inicio torneos");
@@ -72,7 +74,9 @@ module.exports = async function () {
 
         elimination.startEvent();
         console.log("Torneo", elimination);
-        elimination.matches.forEach(async (match) => {
+        const organizador = await Usuario.findById(torneo.id_usuario);
+        for (let i = 0; i < elimination.matches.length; i++) {
+          const match = elimination.matches[i];
           const partida = new PartidaLol({
             id_torneo: elimination.id,
             id_equipo1: match.team1.id_equipo,
@@ -80,7 +84,18 @@ module.exports = async function () {
             etapa: match.round,
           });
           await PartidaLol.create(partida);
-        });
+          const emails = await Equipos.getEmails(match.team1.id_equipo);
+          const nombresInvocador = await Equipos.getEmailsFromTeams([
+            match.team1.id_equipo,
+            match.team2.id_equipo,
+          ]);
+          require("../services/sendNotifCapitanLOL")(
+            emails,
+            nombresInvocador,
+            torneo.nombre,
+            organizador[0].email
+          );
+        }
         // actualizar estado del torneo
         if (torneo.id_estado === 1) {
           Torneos.updateEstado(torneo.id_torneo, 2);
