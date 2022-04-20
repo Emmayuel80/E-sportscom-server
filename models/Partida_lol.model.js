@@ -11,16 +11,15 @@ const PartidaLol = function (partida) {
 // create
 PartidaLol.create = function (partida) {
   return new Promise(function (resolve, reject) {
-    dbConn.query(
-      "INSERT INTO partida_lol SET ?",
-      partida,
-      function (error, results, fields) {
-        if (error) {
-          return reject(error);
-        }
-        resolve(results);
-      }
-    );
+    dbConn
+      .promise()
+      .query("INSERT INTO partida_lol SET ?", partida)
+      .then(function ([fields, rows]) {
+        resolve(fields);
+      })
+      .catch(function (err) {
+        reject(err);
+      });
   });
 };
 
