@@ -2,7 +2,11 @@ const dbConn = require("../config/database");
 const RoundRobin = require("../services/tournaments/RoundRobin");
 const UsuarioTorneoTFT = require("../models/Usuario_torneo_TFT.model");
 const Torneos = require("../models/Torneos.model");
+const EquipoTorneo = require("../models/Equipo_torneo.model");
 const BitacoraTorneo = require("../models/Bitacora_torneo.model");
+const Elimination = require("../services/tournaments/Elimination");
+const PartidaLol = require("../models/Partida_lol.model");
+/* eslint-disable */
 module.exports = async function () {
   console.log("[DAEMON] Check fecha inicio torneos");
   const [fields] = await dbConn
@@ -25,6 +29,71 @@ module.exports = async function () {
       if (torneo.id_juego === 1) {
         // LOL
         console.log("[DAEMON] Iniciando torneo LOL");
+        const equipos = await EquipoTorneo.getEquiposNoEliminados(
+          torneo.id_torneo
+        );
+        const totalEquipos = await EquipoTorneo.getTotalEquipos(
+          torneo.id_torneo
+        );
+        if (totalEquipos.total !== torneo.no_equipos) {
+          console.log(
+            "[DAEMON] No se puede iniciar torneo, equipos insuficientes"
+          );
+          //  Cancelar torneo
+          Torneos.updateEstado(torneo.id_torneo, 4);
+          const newBitacoraTorneo = new BitacoraTorneo({
+            id_torneo: torneo.id_torneo,
+            id_usuario: torneo.id_usuario,
+            desc_modificacion: `Se ha cancelado el torneo: ${torneo.nombre}. Razon: Equipos insuficientes.`,
+          });
+          BitacoraTorneo.create(newBitacoraTorneo);
+          return;
+        }
+        // check si hay suficientes equipos
+        if (equipos.length < 2) {
+          console.log("[DAEMON] No hay suficientes equipos");
+          return;
+        }
+
+        const [fields] = await dbConn
+          .promise()
+          .query(
+            "SELECT * FROM partida_lol where id_torneo = ? and id_ganador is null",
+            torneo.id_torneo
+          );
+        if (fields.length > 0) {
+          return;
+        }
+
+        const elimination = new Elimination({
+          id: torneo.id_torneo,
+          teams: equipos,
+        });
+
+        elimination.startEvent();
+        console.log("Torneo", elimination);
+        elimination.matches.forEach(async (match) => {
+          const partida = new PartidaLol({
+            id_torneo: elimination.id,
+            id_equipo1: match.team1.id_equipo,
+            id_equipo2: match.team2.id_equipo,
+            etapa: match.round,
+          });
+          await PartidaLol.create(partida);
+        });
+        // actualizar estado del torneo
+        if (torneo.id_estado === 1) {
+          Torneos.updateEstado(torneo.id_torneo, 2);
+          const newBitacoraTorneo = new BitacoraTorneo({
+            id_torneo: torneo.id_torneo,
+            id_usuario: torneo.id_usuario,
+            desc_modificacion: `Se ha iniciado el torneo: ${torneo.nombre}.`,
+          });
+          BitacoraTorneo.create(newBitacoraTorneo);
+        }
+        const llave = (await Torneos.getObjLlave(torneo.id_torneo)) || {};
+        llave[`${elimination.round}`] = elimination.matches;
+        await Torneos.updateObjLlave(torneo.id_torneo, llave);
       } else {
         // TFT
         console.log("[DAEMON] Iniciando torneo TFT");
