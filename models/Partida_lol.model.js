@@ -23,4 +23,52 @@ PartidaLol.create = function (partida) {
   });
 };
 
+PartidaLol.getPartidaByTeam = function (idEquipo, idTorneo) {
+  return new Promise(function (resolve, reject) {
+    dbConn
+      .promise()
+      .query(
+        "SELECT * FROM partida_lol WHERE (id_equipo1 = ? OR id_equipo2 = ?) AND id_ganador IS NULL AND id_torneo=?",
+        [idEquipo, idEquipo, idTorneo]
+      )
+      .then(function ([fields, rows]) {
+        resolve(fields[0]);
+      })
+      .catch(function (err) {
+        reject(err);
+      });
+  });
+};
+
+PartidaLol.setWinner = function (idPartida, idGanador) {
+  return new Promise(function (resolve, reject) {
+    dbConn
+      .promise()
+      .query("UPDATE partida_lol SET id_ganador = ? WHERE id_partida = ?", [
+        idGanador,
+        idPartida,
+      ])
+      .then(function ([fields, rows]) {
+        resolve(fields);
+      })
+      .catch(function (err) {
+        reject(err);
+      });
+  });
+};
+
+PartidaLol.getPartidaById = function (idPartida) {
+  return new Promise(function (resolve, reject) {
+    dbConn
+      .promise()
+      .query("SELECT * FROM partida_lol WHERE id_partida = ?", [idPartida])
+      .then(function ([fields, rows]) {
+        resolve(fields[0]);
+      })
+      .catch(function (err) {
+        reject(err);
+      });
+  });
+};
+
 module.exports = PartidaLol;

@@ -164,4 +164,23 @@ router.delete(
     }
   }
 );
+
+// registrar resultado partida LOL
+router.put(
+  "/registerResultLOL/:idGanador/:idPartida",
+  authorize("organizador"),
+  async (req, res) => {
+    const { idGanador, idPartida } = req.params;
+    try {
+      await Organizador.registrarResultadoLOL(idPartida, parseInt(idGanador));
+      res.status(200).json({ msg: "Se registro el resultado." });
+    } catch (err) {
+      res.status(500).json({
+        msg: "Error al registrar el resultado",
+        err: err.toString(),
+      });
+    }
+  }
+);
+
 module.exports = router;

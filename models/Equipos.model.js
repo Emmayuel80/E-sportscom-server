@@ -190,4 +190,22 @@ Equipos.delete = function (idEquipo) {
   });
 };
 
+// get info from players from teams
+Equipos.getPlayersFromTeams = function (idEquipos) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select u.nombre_invocador, u.image, e.nombre as equipo, e.logo from usuarios as u, usuario_equipo as ue, equipos as e where u.id_usuario=ue.id_usuario and ue.id_equipo=e.id_equipo and e.id_equipo in (?)",
+        [idEquipos]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 module.exports = Equipos;

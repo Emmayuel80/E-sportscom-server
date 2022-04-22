@@ -397,4 +397,27 @@ router.get(
   }
 );
 
+// get partida lol
+router.get(
+  "/getPartidaLol/:idTorneo",
+  authorize("jugador"),
+  async (req, res) => {
+    const { idTorneo } = req.params;
+    try {
+      const data = await Jugador.obtenerPartidaLoL(req.user.sub, idTorneo);
+      if (!data) {
+        res.status(404).json({
+          message: "La partida no existe",
+        });
+      }
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json({
+        message: "Error al obtener la partida",
+        error: error.toString(),
+      });
+    }
+  }
+);
+
 module.exports = router;

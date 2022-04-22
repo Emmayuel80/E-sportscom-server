@@ -11,6 +11,7 @@ const BitacoraEquipo = require("./Bitacora_equipo.model");
 const leagueApi = require("../config/riotApi");
 const tftApi = require("../config/tftApi");
 const EnfrentamientoTft = require("./Enfrentamiento_tft.model");
+const PartidaLol = require("./Partida_lol.model");
 const apiConstants = require("twisted").Constants;
 Jugador.getTorneosActivos = async function (start, number) {
   const torneos = await Torneos.getTorneosActivosNoPrivados(start, number);
@@ -515,4 +516,31 @@ Jugador.registerTFTMatch = async function (idUsuario, idEnfrentamiento) {
   return matchFound;
 };
 
+Jugador.obtenerPartidaLoL = async function (idUsuario, idTorneo) {
+  const [fields] = await dbConn.promise().query(
+    `select et.id_equipo from usuarios as u, usuario_equipo as ue, equipos as e, equipo_torneo as et 
+  where u.id_usuario=? and u.id_usuario=ue.id_usuario and ue.id_equipo=e.id_equipo and e.id_equipo=et.id_equipo and et.id_torneo=?;`,
+    [idUsuario, idTorneo]
+  );
+
+  const partida = await PartidaLol.getPartidaByTeam(
+    fields[0].id_equipo,
+    idTorneo
+  );
+
+  const equipos = [partida.id_equipo1, partida.id_equipo2];
+  partida.equipos = [];
+  for (const idEquipo of equipos) {
+    const equipo = {};
+    const equipoDetails = await Equipos.getById(idEquipo);
+    equipo[equipoDetails.nombre] = {
+      logo: equipoDetails.logo,
+      nombre: equipoDetails.nombre,
+      participantes: await Equipos.getPlayersInfo(idEquipo),
+    };
+    partida.equipos.push(equipo);
+  }
+
+  return { partida };
+};
 module.exports = Jugador;

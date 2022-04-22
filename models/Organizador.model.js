@@ -3,6 +3,8 @@ const Torneos = require("./Torneos.model");
 const BitacoraTorneo = require("./Bitacora_torneo.model");
 const UsuarioTorneoTFT = require("./Usuario_torneo_TFT.model");
 const EquipoTorneo = require("./Equipo_torneo.model");
+const PartidaLol = require("./Partida_lol.model");
+const Equipos = require("./Equipos.model");
 
 Organizador.getDashboardData = async function (idUsuario) {
   const data = {};
@@ -88,4 +90,40 @@ Organizador.kickPlayerOrTeam = async function (idTorneo, idUsuario, kickId) {
   }
 };
 
+Organizador.registrarResultadoLOL = async function (idPartida, idGanador) {
+  const partida = await PartidaLol.getPartidaById(idPartida);
+  console.log(partida);
+  if (partida.id_equipo1 === idGanador || partida.id_equipo2 === idGanador) {
+    const loser =
+      partida.id_equipo1 === idGanador
+        ? partida.id_equipo2
+        : partida.id_equipo1;
+    await PartidaLol.setWinner(idPartida, idGanador);
+    await EquipoTorneo.setLoser(partida.id_torneo, loser);
+    const torneo = await Torneos.getById(partida.id_torneo);
+    const equipo = await Equipos.getNombre(idGanador);
+
+    // actualizar bitacora
+    const newBitacoraTorneo1 = new BitacoraTorneo({
+      id_torneo: torneo.id_torneo,
+      id_usuario: torneo.id_usuario,
+      desc_modificacion: `Se registro el resultado de la partida con id: ${idPartida}. Equipo ganador: ${equipo.nombre}.`,
+    });
+    BitacoraTorneo.create(newBitacoraTorneo1);
+    if (partida.etapa === 1) {
+      // finalizar torneo
+      await Torneos.updateEstado(partida.id_torneo, 3);
+      await EquipoTorneo.setGanadorTorneo(partida.id_torneo, idGanador);
+      // actualizar bitacora
+      const newBitacoraTorneo2 = new BitacoraTorneo({
+        id_torneo: torneo.id_torneo,
+        id_usuario: torneo.id_usuario,
+        desc_modificacion: `Se finalizó el torneo ${torneo.nombre}. Equipo ganador: ${equipo.nombre}.`,
+      });
+      BitacoraTorneo.create(newBitacoraTorneo2);
+    }
+  } else {
+    throw new Error("El equipo ganador no pertenece al torneo");
+  }
+};
 module.exports = Organizador;

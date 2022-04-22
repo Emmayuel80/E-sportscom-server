@@ -134,4 +134,37 @@ EquipoTorneo.getEquiposNoEliminados = (idequipo) => {
   });
 };
 
+EquipoTorneo.setLoser = (idTorneo, idEquipo) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "UPDATE equipo_torneo SET estado=0 WHERE id_torneo=? AND id_equipo=?",
+        [idTorneo, idEquipo]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+EquipoTorneo.setGanadorTorneo = (idTorneo, idEquipo) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "UPDATE equipo_torneo SET ganador=1 WHERE id_torneo=? AND id_equipo=?",
+        [idTorneo, idEquipo]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
 module.exports = EquipoTorneo;
