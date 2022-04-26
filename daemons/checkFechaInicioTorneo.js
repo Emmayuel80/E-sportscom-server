@@ -49,6 +49,11 @@ module.exports = async function () {
             desc_modificacion: `Se ha cancelado el torneo: ${torneo.nombre}. Razon: Equipos insuficientes.`,
           });
           BitacoraTorneo.create(newBitacoraTorneo);
+          require("../services/sendUpdateTournamentMail")(
+            torneo,
+            torneo.nombre,
+            "El torneo ha sido cancelado por falta de equipos."
+          );
           return;
         }
         // check si hay suficientes equipos
@@ -117,6 +122,22 @@ module.exports = async function () {
         );
         // check if participantes length is a multiple of 8
         if (participantes.length % 8 !== 0) {
+          console.log(
+            "[DAEMON] No se puede iniciar torneo, jugadores insuficientes"
+          );
+          //  Cancelar torneo
+          Torneos.updateEstado(torneo.id_torneo, 4);
+          const newBitacoraTorneo = new BitacoraTorneo({
+            id_torneo: torneo.id_torneo,
+            id_usuario: torneo.id_usuario,
+            desc_modificacion: `Se ha cancelado el torneo: ${torneo.nombre}. Razon: Jugadores insuficientes.`,
+          });
+          BitacoraTorneo.create(newBitacoraTorneo);
+          require("../services/sendUpdateTournamentMail")(
+            torneo,
+            torneo.nombre,
+            "El torneo ha sido cancelado por falta de equipos."
+          );
           return;
         }
         const rr = new RoundRobin({
