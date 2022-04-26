@@ -150,11 +150,11 @@ router.put("/editProfile", authorize(), (req, res) => {
           });
         })
         .catch((err) => {
-          res.status(400).send(err);
+          res.status(400).send({ error: err.toString() });
         });
     })
     .catch((err) => {
-      res.status(400).send(err);
+      res.status(400).send({ error: err.toString() });
     });
 });
 

@@ -110,12 +110,16 @@ Usuario.updateProfile = function (id, request) {
       apiConstants.Regions.LAT_NORTH
     )
       .then(({ response }) => {
+        console.log(response);
+        if (response.profileIconId !== request.profileIconId)
+          throw new Error("El icono de perfil no coincide con el invocador.");
+
         request.image = `https://cdn.communitydragon.org/12.3.1/profile-icon/${response.profileIconId}`;
         return dbConn
           .promise()
           .query(
             "UPDATE usuarios set nombre = ?, nombre_invocador=?, image=? WHERE id_usuario=?",
-            [request.nombre, request.nombre_invocador, request.image, id]
+            [request.nombre, response.name, request.image, id]
           );
       })
       .then(([fields, rows]) => {

@@ -36,9 +36,12 @@ Jugador.getTorneoByName = async function (nombre, start, number) {
     throw new Error("No se encontraron torneos activos");
   } else return data;
 };
-
+/* eslint-disable complexity */
 Jugador.registerPlayerToTournament = async function (idTorneo, idUsuario) {
   const torneo = await Torneos.getById(idTorneo);
+  const usuario = await Usuario.findById(idUsuario);
+  if (!usuario.nombre_invocador)
+    throw new Error("El usuario no tiene un nombre de invocador registrado.");
   if (torneo.length <= 0) throw new Error("El torneo no existe");
   if (torneo.id_estado > 0)
     throw new Error("El torneo no se encuentra en estado de registro");
@@ -72,7 +75,6 @@ Jugador.registerPlayerToTournament = async function (idTorneo, idUsuario) {
     );
     if (data) {
       // register in the bitacora
-      const usuario = await Usuario.findById(idUsuario);
       BitacoraTorneo.create(
         new BitacoraTorneo({
           id_torneo: idTorneo,
@@ -107,6 +109,9 @@ Jugador.getActiveTournaments = async function (idUsuario, start, number) {
 };
 
 Jugador.createEquipo = async function (idUsuario, equipo) {
+  const usuario = await Usuario.findById(idUsuario);
+  if (!usuario.nombre_invocador)
+    throw new Error("El usuario no tiene un nombre de invocador registrado.");
   // check if the user already has/join 5 teams
   const equipos = await UsuarioEquipo.getTotalEquiposJugador(idUsuario);
   if (equipos >= 5) throw new Error("El jugador ya tiene 5 equipos");
@@ -119,6 +124,10 @@ Jugador.createEquipo = async function (idUsuario, equipo) {
 };
 
 Jugador.joinEquipo = async function (idUsuario, code) {
+  // check if user has registered its nombre_invocador
+  const usuarioInfo = await Usuario.findById(idUsuario);
+  if (!usuarioInfo.nombre_invocador)
+    throw new Error("El usuario no tiene un nombre de invocador registrado.");
   // check if the team exists
   const equipo = await Equipos.getByCode(code);
   if (!equipo) throw new Error("El equipo no existe");
