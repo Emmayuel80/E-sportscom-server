@@ -26,7 +26,7 @@ BitacoraEquipo.getAllFromEquipo = function (idEquipo) {
     dbConn
       .promise()
       .query(
-        "SELECT * FROM bitacora_equipo WHERE id_equipo = ? ORDER BY fecha_modificacion ASC",
+        "SELECT * FROM bitacora_equipo WHERE id_equipo = ? ORDER BY id_bitacora_equipo DESC",
         idEquipo
       )
       .then(([fields, rows]) => {

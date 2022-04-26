@@ -71,7 +71,7 @@ PartidaLol.getPartidaById = function (idPartida) {
   });
 };
 
-PartidaLol.getPartidasByTorneo = function (idTorneo) {
+PartidaLol.getPartidasFromTorneo = function (idTorneo) {
   return new Promise(function (resolve, reject) {
     dbConn
       .promise()
