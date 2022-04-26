@@ -5,6 +5,7 @@ const UsuarioTorneoTFT = require("./Usuario_torneo_TFT.model");
 const EquipoTorneo = require("./Equipo_torneo.model");
 const PartidaLol = require("./Partida_lol.model");
 const Equipos = require("./Equipos.model");
+const EnfrentamientoTft = require("./Enfrentamiento_tft.model");
 
 Organizador.getDashboardData = async function (idUsuario) {
   const data = {};
@@ -59,6 +60,7 @@ Organizador.getTournamentData = async function (idTorneo, idUsuario) {
     const data = {
       torneo: torneo,
       participantes: await Torneos.getInfoEquipos(idTorneo),
+      partidas: await PartidaLol.getPartidasFromTorneo(idTorneo),
     };
     return data;
   } else if (torneo.id_juego === 2) {
@@ -66,6 +68,7 @@ Organizador.getTournamentData = async function (idTorneo, idUsuario) {
     const data = {
       torneo: torneo,
       participantes: await UsuarioTorneoTFT.getJugadoresTorneo(idTorneo),
+      partidas: await EnfrentamientoTft.getEnfrentamientosFromTorneo(idTorneo),
     };
     return data;
   }

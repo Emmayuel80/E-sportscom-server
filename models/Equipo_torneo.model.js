@@ -86,7 +86,7 @@ EquipoTorneo.getTorneosGanados = (idUsuario) => {
       .promise()
       .query(
         `select count(*) as total from usuarios as u, usuario_equipo as ue, equipos as e, equipo_torneo as et, torneos as t 
-      where u.id_usuario=? and u.id_usuario=ue.id_usuario and ue.id_equipo=e.id_equipo and e.id_equipo=et.id_equipo and et.id_torneo=t.id_torneo and et.ganado=1 and t.id_estado=3;`,
+      where u.id_usuario=? and u.id_usuario=ue.id_usuario and ue.id_equipo=e.id_equipo and e.id_equipo=et.id_equipo and et.id_torneo=t.id_torneo and et.ganador=1 and t.id_estado=3;`,
         [idUsuario]
       )
       .then(([fields, rows]) => {

@@ -3,6 +3,7 @@ const router = express.Router();
 const authorize = require("../middleware/authorize.js");
 const Organizador = require("../models/Organizador.model.js");
 const Torneos = require("../models/Torneos.model.js");
+const BitacoraTorneo = require("../models/Bitacora_torneo.model.js");
 
 router.get("/dashboardData", authorize("organizador"), async (req, res) => {
   const data = await Organizador.getDashboardData(req.user.sub);
@@ -177,6 +178,31 @@ router.put(
     } catch (err) {
       res.status(500).json({
         msg: "Error al registrar el resultado",
+        err: err.toString(),
+      });
+    }
+  }
+);
+
+// get bitacora from torneo
+router.get(
+  "/bitacora/:idTorneo",
+  authorize("organizador"),
+  async (req, res) => {
+    const { idTorneo } = req.params;
+    try {
+      const data = await BitacoraTorneo.getAllFromTorneo(idTorneo);
+      if (data.error) {
+        res.status(500).json({
+          message: "Error al obtener la bitacora",
+          error: data.error,
+        });
+      } else {
+        res.status(200).json(data);
+      }
+    } catch (err) {
+      res.status(500).json({
+        msg: "Error al obtener la bitacora",
         err: err.toString(),
       });
     }

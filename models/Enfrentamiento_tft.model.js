@@ -64,4 +64,18 @@ EnfrentamientoTft.getEnfrentamientosSinJugar = function (idTorneo) {
   });
 };
 
+EnfrentamientoTft.getEnfrentamientosFromTorneo = function (idTorneo) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("select * from enfrentamiento_tft where id_torneo=?;", idTorneo)
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 module.exports = EnfrentamientoTft;

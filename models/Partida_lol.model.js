@@ -71,4 +71,21 @@ PartidaLol.getPartidaById = function (idPartida) {
   });
 };
 
+PartidaLol.getPartidasByTorneo = function (idTorneo) {
+  return new Promise(function (resolve, reject) {
+    dbConn
+      .promise()
+      .query(
+        "SELECT p.*, e1.nombre as equipo1, e1.logo as logo1, e2.nombre as equipo2, e2.logo as logo2 FROM partida_lol as p, equipos as e1, equipos as e2 where p.id_torneo=? and e1.id_equipo=p.id_equipo1 and e2.id_equipo=p.id_equipo2",
+        [idTorneo]
+      )
+      .then(function ([fields, rows]) {
+        resolve(fields);
+      })
+      .catch(function (err) {
+        reject(err);
+      });
+  });
+};
+
 module.exports = PartidaLol;

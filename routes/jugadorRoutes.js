@@ -420,4 +420,27 @@ router.get(
   }
 );
 
+// get bitacora equipo
+router.get(
+  "/getBitacoraEquipo/:idEquipo",
+  authorize("jugador"),
+  async (req, res) => {
+    const { idEquipo } = req.params;
+    try {
+      const data = await Jugador.getBitacoraEquipo(req.user.sub, idEquipo);
+      if (!data) {
+        res.status(404).json({
+          message: "El equipo no existe",
+        });
+      }
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json({
+        message: "Error al obtener la bitacora del equipo",
+        error: error.toString(),
+      });
+    }
+  }
+);
+
 module.exports = router;

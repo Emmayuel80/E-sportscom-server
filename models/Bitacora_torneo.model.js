@@ -85,4 +85,21 @@ BitacoraTorneo.delete = function (id) {
   });
 };
 
+BitacoraTorneo.getByIdTorneo = function (id) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "SELECT * FROM bitacora_torneo WHERE id_torneo = ? ORDER BY fecha_modificacion ASC",
+        [id]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 module.exports = BitacoraTorneo;

@@ -489,6 +489,7 @@ Jugador.registerTFTMatch = async function (idUsuario, idEnfrentamiento) {
     }
   });
   // console.log(enfrentamiento);
+  enfrentamiento.json_resultado = matchFound;
   EnfrentamientoTft.update(idEnfrentamiento, enfrentamiento, torneo);
   // Codigo de hoy
   // console.log(enfrentamiento.json_data.players);
@@ -531,16 +532,25 @@ Jugador.obtenerPartidaLoL = async function (idUsuario, idTorneo) {
   const equipos = [partida.id_equipo1, partida.id_equipo2];
   partida.equipos = [];
   for (const idEquipo of equipos) {
-    const equipo = {};
     const equipoDetails = await Equipos.getById(idEquipo);
-    equipo[equipoDetails.nombre] = {
+    const equipo = {
       logo: equipoDetails.logo,
       nombre: equipoDetails.nombre,
       participantes: await Equipos.getPlayersInfo(idEquipo),
+      id_equipo: idEquipo,
     };
     partida.equipos.push(equipo);
   }
 
   return { partida };
 };
+
+Jugador.getBitacoraEquipo = async function (idUsuario, idEquipo) {
+  // check if user is captain
+  const usuario = await UsuarioEquipo.getEquipoJugador(idUsuario, idEquipo);
+  if (!usuario.capitan) throw new Error("El usuario no es capitán del equipo");
+  const bitacora = await BitacoraEquipo.getAllFromEquipo(idEquipo);
+  return { bitacora };
+};
+
 module.exports = Jugador;
