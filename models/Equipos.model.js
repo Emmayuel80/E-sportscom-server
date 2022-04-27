@@ -157,6 +157,21 @@ Equipos.getById = function (idEquipo) {
   });
 };
 
+// Recuperar nombre y logo del equipo
+Equipos.getNameLogoById = function (idEquipo) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("SELECT nombre,logo FROM equipos WHERE id_equipo = ?", [idEquipo])
+      .then(([fields, rows]) => {
+        resolve(fields[0]);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 // get nombre, nombre_invocador and image
 Equipos.getPlayersInfo = function (idEquipo) {
   return new Promise((resolve, reject) => {

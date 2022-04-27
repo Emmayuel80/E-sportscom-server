@@ -57,10 +57,18 @@ Organizador.getTournamentData = async function (idTorneo, idUsuario) {
   const torneo = await Torneos.getTorneoCreado(idTorneo, idUsuario);
   if (torneo.id_juego === 1) {
     // League of Legends
+    const partidas = await PartidaLol.getPartidasFromTorneo(idTorneo);
+    for (const element of partidas) {
+      if (element.id_ganador) {
+        const ganador = await Equipos.getNameLogoById(element.id_ganador);
+        element.nombre_ganador = ganador.nombre;
+        element.logo_ganador = ganador.logo;
+      }
+    }
     const data = {
       torneo: torneo,
       participantes: await Torneos.getInfoEquipos(idTorneo),
-      partidas: await PartidaLol.getPartidasFromTorneo(idTorneo),
+      partidas: partidas,
     };
     return data;
   } else if (torneo.id_juego === 2) {
