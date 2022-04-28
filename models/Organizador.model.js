@@ -73,10 +73,22 @@ Organizador.getTournamentData = async function (idTorneo, idUsuario) {
     return data;
   } else if (torneo.id_juego === 2) {
     // TFT
+    const riotApiPlayers = await UsuarioTorneoTFT.getRiotApiPlayerByTournament(
+      idTorneo
+    );
+    const puuids = {};
+    for (const element of riotApiPlayers) {
+      puuids[element.riot_api.puuidTFT] = {
+        id: element.id_usuario,
+        nombre: element.nombre,
+        image: element.image,
+      };
+    }
     const data = {
       torneo: torneo,
       participantes: await UsuarioTorneoTFT.getJugadoresTorneo(idTorneo),
       partidas: await EnfrentamientoTft.getEnfrentamientosFromTorneo(idTorneo),
+      puuids: puuids,
     };
     return data;
   }

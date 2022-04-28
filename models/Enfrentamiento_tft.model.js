@@ -70,7 +70,24 @@ EnfrentamientoTft.getEnfrentamientosFromTorneo = function (idTorneo) {
       .promise()
       .query("select * from enfrentamiento_tft where id_torneo=?;", idTorneo)
       .then(([fields, rows]) => {
-        resolve(fields);
+        const parsedFields = fields.map((enfrentamiento) => {
+          enfrentamiento.json_resultado = JSON.parse(
+            enfrentamiento.json_resultado || "{}"
+          );
+          enfrentamiento.json_data = JSON.parse(
+            enfrentamiento.json_data || "{}"
+          );
+          return enfrentamiento;
+        });
+        // sort by placement
+        for (const enfrentamiento of parsedFields) {
+          if (enfrentamiento.json_resultado.info) {
+            enfrentamiento.json_resultado.info.participants.sort((a, b) => {
+              return a.placement - b.placement;
+            });
+          }
+        }
+        resolve(parsedFields);
       })
       .catch((err) => {
         reject(err);

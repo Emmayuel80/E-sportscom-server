@@ -383,4 +383,27 @@ UsuarioTorneoTFT.eliminarJugador = async (idTorneo, idUsuario) => {
   });
 };
 
+UsuarioTorneoTFT.getRiotApiPlayerByTournament = async (idTorneo) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `select id_usuario, nombre, image, riot_api from usuarios where id_usuario in (SELECT id_usuario FROM usuario_torneo_tft where id_torneo=?);`,
+        [idTorneo]
+      )
+      .then(([fields, rows]) => {
+        // parsear a json
+        resolve(
+          fields.map((field) => {
+            field.riot_api = JSON.parse(field.riot_api || "{}");
+            return field;
+          })
+        );
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 module.exports = UsuarioTorneoTFT;
