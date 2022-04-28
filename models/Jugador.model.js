@@ -110,7 +110,7 @@ Jugador.getActiveTournaments = async function (idUsuario, start, number) {
 
 Jugador.createEquipo = async function (idUsuario, equipo) {
   const usuario = await Usuario.findById(idUsuario);
-  if (!usuario.nombre_invocador)
+  if (!usuario[0].nombre_invocador)
     throw new Error("El usuario no tiene un nombre de invocador registrado.");
   // check if the user already has/join 5 teams
   const equipos = await UsuarioEquipo.getTotalEquiposJugador(idUsuario);
@@ -126,7 +126,7 @@ Jugador.createEquipo = async function (idUsuario, equipo) {
 Jugador.joinEquipo = async function (idUsuario, code) {
   // check if user has registered its nombre_invocador
   const usuarioInfo = await Usuario.findById(idUsuario);
-  if (!usuarioInfo.nombre_invocador)
+  if (!usuarioInfo[0].nombre_invocador)
     throw new Error("El usuario no tiene un nombre de invocador registrado.");
   // check if the team exists
   const equipo = await Equipos.getByCode(code);
