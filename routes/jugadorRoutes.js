@@ -5,6 +5,8 @@ const Jugador = require("../models/Jugador.model");
 const Torneos = require("../models/Torneos.model");
 const Usuario = require("../models/Usuario.model.js");
 const UsuarioTorneoTFT = require("../models/Usuario_torneo_TFT.model.js");
+const PartidaLol = require("../models/Partida_lol.model.js");
+const Equipos = require("../models/Equipos.model.js");
 router.get(
   "/getTorneosActivos/:start/:number",
   authorize("jugador"),
@@ -91,25 +93,42 @@ router.get(
     const { idTorneo } = req.params;
     try {
       const torneo = await Torneos.getById(idTorneo);
+      const organizador = await Usuario.findById(torneo.id_usuario);
+      if (torneo.json_llave) {
+        torneo.json_llave = JSON.parse(torneo.json_llave);
+      }
       let participantes;
+      let data;
       if (torneo.id_juego === 1) {
         // LoL
-        participantes = await Torneos.getInfoEquipos(torneo.id_torneo);
+        // League of Legends
+        const partidas = await PartidaLol.getPartidasFromTorneo(idTorneo);
+
+        for (const element of partidas) {
+          if (element.id_ganador) {
+            const ganador = await Equipos.getNameLogoById(element.id_ganador);
+            element.nombre_ganador = ganador.nombre;
+            element.logo_ganador = ganador.logo;
+          }
+        }
+        data = {
+          ...torneo,
+          participantes: await Torneos.getInfoEquipos(idTorneo),
+          partidas: partidas,
+        };
       } else if (torneo.id_juego === 2) {
         // TFT
         participantes = await UsuarioTorneoTFT.getJugadoresTorneo(
           torneo.id_torneo
         );
+        data = {
+          ...torneo,
+          participantes: participantes,
+          organizador: organizador[0].nombre,
+        };
       }
-      const organizador = await Usuario.findById(torneo.id_usuario);
-      if (torneo.json_llave) {
-        torneo.json_llave = JSON.parse(torneo.json_llave);
-      }
-      res.status(200).json({
-        ...torneo,
-        participantes: participantes,
-        organizador: organizador[0].nombre,
-      });
+
+      res.status(200).json(data);
     } catch (error) {
       res.status(500).json({
         message: "Error al obtener el torneo",
