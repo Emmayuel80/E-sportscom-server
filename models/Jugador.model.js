@@ -412,11 +412,12 @@ Jugador.actualizarRiotApi = async function (idUsuario) {
       masteryLOL.response[2],
     ],
   };
-
+  const image = `https://cdn.communitydragon.org/12.3.1/profile-icon/${summonerLOL.response.profileIconId}`;
   await dbConn
     .promise()
-    .query(`UPDATE usuarios SET riot_api=? WHERE id_usuario = ?`, [
+    .query(`UPDATE usuarios SET riot_api=?, image=? WHERE id_usuario = ?`, [
       JSON.stringify(data),
+      image,
       idUsuario,
     ]);
   return data;

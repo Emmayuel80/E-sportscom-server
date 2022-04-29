@@ -102,6 +102,9 @@ router.get(
         );
       }
       const organizador = await Usuario.findById(torneo.id_usuario);
+      if (torneo.json_llave) {
+        torneo.json_llave = JSON.parse(torneo.json_llave);
+      }
       res.status(200).json({
         ...torneo,
         participantes: participantes,
