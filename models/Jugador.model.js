@@ -40,7 +40,7 @@ Jugador.getTorneoByName = async function (nombre, start, number) {
 Jugador.registerPlayerToTournament = async function (idTorneo, idUsuario) {
   const torneo = await Torneos.getById(idTorneo);
   const usuario = await Usuario.findById(idUsuario);
-  if (!usuario.nombre_invocador)
+  if (!usuario[0].nombre_invocador)
     throw new Error("El usuario no tiene un nombre de invocador registrado.");
   if (torneo.length <= 0) throw new Error("El torneo no existe");
   if (torneo.id_estado > 0)
@@ -346,6 +346,13 @@ Jugador.deletePlayerFromTeam = async function (idJugador, idEquipo) {
   // kick the player
   // get team name
   const nombreEquipo = await Equipos.getNombre(idEquipo);
+  // check if the team is already in a active tournament
+  const torneosActivos = await UsuarioEquipo.getTorneosDelEquipo(
+    idJugador,
+    idEquipo
+  );
+  if (torneosActivos)
+    throw new Error("El Equipo esta actualmente en un torneo activo");
   await UsuarioEquipo.delete(idJugador, idEquipo, nombreEquipo, false);
 };
 

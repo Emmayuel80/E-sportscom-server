@@ -21,7 +21,7 @@ router.get("/dashboardData", authorize("organizador"), async (req, res) => {
 router.post("/createTournament", authorize("organizador"), async (req, res) => {
   const newTornament = new Torneos({ ...req.body, id_usuario: req.user.sub });
   const activeTournaments = await Torneos.getTorneosActivos(req.user.sub, true);
-  if (activeTournaments[0].numero > 5) {
+  if (activeTournaments[0].numero >= 5) {
     res
       .status(422)
       .json({ err: "Solo se pueden tener un maximo de 5 torneos activos" });
