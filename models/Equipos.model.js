@@ -37,8 +37,26 @@ Equipos.getEmails = function (idEquipo) {
     dbConn
       .promise()
       .query(
-        "select u.email, u.nombre from usuarios as u, usuario_equipo as ue, equipos as e where e.id_equipo=? and e.id_equipo=ue.id_equipo and ue.id_usuario=u.id_usuario;",
+        "select u.email, u.nombre, e.nombre as nombreEquipo from usuarios as u, usuario_equipo as ue, equipos as e where e.id_equipo=? and e.id_equipo=ue.id_equipo and ue.id_usuario=u.id_usuario;",
         [idEquipo]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+// get mails from teams
+Equipos.getEmailsFromTeams = function (idEquipos) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select u.nombre_invocador, u.email from usuarios as u, usuario_equipo as ue, equipos as e where u.id_usuario=ue.id_usuario and ue.id_equipo=e.id_equipo and e.id_equipo in (?)",
+        [idEquipos]
       )
       .then(([fields, rows]) => {
         resolve(fields);
@@ -139,6 +157,21 @@ Equipos.getById = function (idEquipo) {
   });
 };
 
+// Recuperar nombre y logo del equipo
+Equipos.getNameLogoById = function (idEquipo) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("SELECT nombre,logo FROM equipos WHERE id_equipo = ?", [idEquipo])
+      .then(([fields, rows]) => {
+        resolve(fields[0]);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 // get nombre, nombre_invocador and image
 Equipos.getPlayersInfo = function (idEquipo) {
   return new Promise((resolve, reject) => {
@@ -147,6 +180,39 @@ Equipos.getPlayersInfo = function (idEquipo) {
       .query(
         "select u.id_usuario, u.nombre, u.nombre_invocador, u.image, ue.capitan from usuarios as u, usuario_equipo as ue, equipos as e where e.id_equipo=? and e.id_equipo=ue.id_equipo and ue.id_usuario=u.id_usuario;",
         [idEquipo]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+// delete team
+Equipos.delete = function (idEquipo) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("DELETE FROM equipos WHERE id_equipo = ?", [idEquipo])
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+// get info from players from teams
+Equipos.getPlayersFromTeams = function (idEquipos) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select u.nombre_invocador, u.image, e.nombre as equipo, e.logo from usuarios as u, usuario_equipo as ue, equipos as e where u.id_usuario=ue.id_usuario and ue.id_equipo=e.id_equipo and e.id_equipo in (?)",
+        [idEquipos]
       )
       .then(([fields, rows]) => {
         resolve(fields);

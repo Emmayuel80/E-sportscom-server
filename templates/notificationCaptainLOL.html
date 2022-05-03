@@ -195,23 +195,18 @@
           text-align: center !important;
         }
         .r23-i {
-          padding-bottom: 0px !important;
-          padding-top: 0px !important;
-          text-align: center !important;
-        }
-        .r24-i {
           padding-bottom: 15px !important;
           padding-left: 0px !important;
           padding-right: 0px !important;
           padding-top: 0px !important;
         }
-        .r25-c {
+        .r24-c {
           box-sizing: border-box !important;
           text-align: center !important;
           valign: top !important;
           width: 129px !important;
         }
-        .r26-o {
+        .r25-o {
           border-style: solid !important;
           margin: 0 auto 0 auto !important;
           width: 129px !important;
@@ -253,7 +248,7 @@
       h4,
       ol,
       ul {
-        margin: 0px !important;
+        margin: 0;
       }
       a,
       a:link {
@@ -462,7 +457,7 @@
                                                     "
                                                   >
                                                     <div>
-                                                      <p style="margin: 0px">
+                                                      <p style="margin: 0">
                                                         <a
                                                           href="{{ mirror }}"
                                                           style="
@@ -834,15 +829,16 @@
                                                       <h2
                                                         class="default-heading2"
                                                         style="
+                                                          margin: 0;
                                                           color: #1f2d3d;
                                                           font-family: arial,
                                                             helvetica,
                                                             sans-serif;
                                                           font-size: 32px;
-                                                          margin: 0px;
                                                         "
                                                       >
-                                                        Recupera tu contraseña
+                                                        ¡Has sido seleccionado
+                                                        capitán!
                                                       </h2>
                                                     </div>
                                                   </td>
@@ -892,89 +888,69 @@
                                                     "
                                                   >
                                                     <div>
-                                                      <p style="margin: 0px">
-                                                        ¡Hola, {{username}}! 
+                                                      <p style="margin: 0">
+                                                        !Hola, {{username}}! 
                                                       </p>
-                                                      <p style="margin: 0px">
+                                                      <p style="margin: 0">
                                                         Estás recibiendo este
-                                                        correo porque hiciste
-                                                        una solicitud de
-                                                        recuperación de
-                                                        contraseña para tu
-                                                        cuenta.
+                                                        correo porque se te ha
+                                                        seleccionado como
+                                                        capitán. 
                                                       </p>
-                                                      <p style="margin: 0px">
-                                                        Da click al siguiente
-                                                        enlace: {{link}}
+                                                      <p style="margin: 0">
+                                                        Te pedimos que crees la
+                                                        partida de League of
+                                                        Legends (LOL) para el
+                                                        torneo {{torneo}} con
+                                                        los siguientes nombres
+                                                        de invocador:
                                                       </p>
-                                                    </div>
-                                                  </td>
-                                                </tr>
-                                                <tr
-                                                  class="nl2go-responsive-hide"
-                                                >
-                                                  <td
-                                                    height="15"
-                                                    style="
-                                                      font-size: 15px;
-                                                      line-height: 15px;
-                                                    "
-                                                  >
-                                                    ­
-                                                  </td>
-                                                </tr>
-                                              </table>
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <td class="r18-c" align="left">
-                                              <table
-                                                cellspacing="0"
-                                                cellpadding="0"
-                                                border="0"
-                                                role="presentation"
-                                                width="100%"
-                                                class="r19-o"
-                                                style="
-                                                  table-layout: fixed;
-                                                  width: 100%;
-                                                "
-                                              >
-                                                <tr
-                                                  class="nl2go-responsive-hide"
-                                                >
-                                                  <td
-                                                    height="15"
-                                                    style="
-                                                      font-size: 15px;
-                                                      line-height: 15px;
-                                                    "
-                                                  >
-                                                    ­
-                                                  </td>
-                                                </tr>
-                                                <tr>
-                                                  <td
-                                                    align="left"
-                                                    valign="top"
-                                                    class="r21-i nl2go-default-textstyle"
-                                                    style="
-                                                      color: #3b3f44;
-                                                      font-family: arial,
-                                                        helvetica, sans-serif;
-                                                      font-size: 16px;
-                                                      line-height: 1.5;
-                                                      text-align: left;
-                                                    "
-                                                  >
-                                                    <div>
-                                                      <p style="margin: 0px">
-                                                        Si no realizaste esta
-                                                        solicitud, no se
-                                                        requiere realizar
-                                                        ninguna otra acción,
-                                                        este link expira en 1
-                                                        hora.
+                                                      <p style="margin: 0">
+                                                        <strong
+                                                          >{{{invocadores}}}</strong
+                                                        >
+                                                      </p>
+                                                      <p style="margin: 0">
+                                                        Una vez haya terminado
+                                                        la partida de LOL, por
+                                                        favor que el equipo
+                                                        envié solamente un
+                                                        correo al organizador
+                                                        del torneo para
+                                                        registrar el resultado
+                                                        del partido.
+                                                      </p>
+                                                      <p style="margin: 0"> </p>
+                                                      <p style="margin: 0">
+                                                        El cuerpo del correo
+                                                        debe llevar:
+                                                      </p>
+                                                      <p style="margin: 0">
+                                                        Nombre del torneo
+                                                      </p>
+                                                      <p style="margin: 0">
+                                                        Lista de invocadores de
+                                                        los equipos (invocadores
+                                                        mencionados previamente)
+                                                      </p>
+                                                      <p style="margin: 0">
+                                                        Captura del resultado de
+                                                        la partida (donde se vea
+                                                        claramente los nombre de
+                                                        los invocadores y el
+                                                        ganador)
+                                                      </p>
+                                                      <p style="margin: 0"> </p>
+                                                      <p style="margin: 0">
+                                                        Correo del
+                                                        organizador:<strong>
+                                                          {{email_organizador}}</strong
+                                                        >
+                                                      </p>
+                                                      <p style="margin: 0"> </p>
+                                                      <p style="margin: 0">
+                                                        ¡Mucho éxito en la
+                                                        partida!
                                                       </p>
                                                     </div>
                                                   </td>
@@ -1152,59 +1128,10 @@
                                                     "
                                                   >
                                                     <div>
-                                                      <p style="margin: 0px">
+                                                      <p style="margin: 0">
                                                         <span
                                                           style="color: #ffffff"
-                                                          >E-SPORTSCOM</span
-                                                        >
-                                                      </p>
-                                                    </div>
-                                                  </td>
-                                                </tr>
-                                              </table>
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <td class="r18-c" align="left">
-                                              <table
-                                                cellspacing="0"
-                                                cellpadding="0"
-                                                border="0"
-                                                role="presentation"
-                                                width="100%"
-                                                class="r19-o"
-                                                style="
-                                                  table-layout: fixed;
-                                                  width: 100%;
-                                                "
-                                              >
-                                                <tr>
-                                                  <td
-                                                    align="center"
-                                                    valign="top"
-                                                    class="r23-i nl2go-default-textstyle"
-                                                    style="
-                                                      color: #3b3f44;
-                                                      font-family: arial,
-                                                        helvetica, sans-serif;
-                                                      font-size: 18px;
-                                                      line-height: 1.5;
-                                                      text-align: center;
-                                                    "
-                                                  >
-                                                    <div>
-                                                      <p
-                                                        style="
-                                                          font-size: 14px;
-                                                          margin: 0px;
-                                                        "
-                                                      >
-                                                        <span
-                                                          style="color: #ffffff"
-                                                          >Recibiste este correo
-                                                          porque deseas
-                                                          recuperar tu
-                                                          contraseña</span
+                                                          >ESPORTSCOM</span
                                                         >
                                                       </p>
                                                     </div>
@@ -1230,7 +1157,7 @@
                                                 <tr>
                                                   <td
                                                     valign="top"
-                                                    class="r24-i"
+                                                    class="r23-i"
                                                   >
                                                     <table
                                                       width="100%"
@@ -1241,7 +1168,7 @@
                                                     >
                                                       <tr>
                                                         <td
-                                                          class="r25-c"
+                                                          class="r24-c"
                                                           align="center"
                                                         >
                                                           <table
@@ -1250,7 +1177,7 @@
                                                             border="0"
                                                             role="presentation"
                                                             width="129"
-                                                            class="r26-o"
+                                                            class="r25-o"
                                                             style="
                                                               table-layout: fixed;
                                                             "

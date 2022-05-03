@@ -105,3 +105,4 @@ dist
 
 #test de server
 server/test.js
+test.js

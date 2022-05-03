@@ -20,19 +20,20 @@ module.exports = function () {
             const newBitacoraTorneo = new BitacoraTorneo({
               id_torneo: row.id_torneo,
               id_usuario: row.id_usuario,
-              desc_modificacion: "Se cancelo el torneo: " + row.nombre,
+              desc_modificacion:
+                "Se terminó la fase de inscripción del torneo: " + row.nombre,
             });
             await BitacoraTorneo.create(newBitacoraTorneo);
             require("../services/sendUpdateTournamentMail")(
               row,
               row.nombre,
-              "El torneo cerró su fase de inscripción. <br> El torneo iniciara el " +
+              "El torneo cerró su fase de inscripción. <br> El torneo iniciará el " +
                 row.fecha_inicio.toLocaleDateString("es-MX")
             );
             console.log(
               "[fecha fin de registro] Torneo " +
                 row.id_torneo +
-                " ha cambiado de estado a Confirmacion."
+                " ha cambiado de estado a Confirmación."
             );
           } catch (err) {
             console.log(err);

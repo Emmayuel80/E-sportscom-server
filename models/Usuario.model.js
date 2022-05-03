@@ -4,6 +4,7 @@ const saltRounds = 5;
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
 const leagueJS = require("../config/riotApi");
+const apiConstants = require("twisted").Constants;
 // Usuario object create
 const Usuario = function (usuario) {
   this.nombre = usuario.username;
@@ -104,14 +105,21 @@ Usuario.findAll = function () {
 // Permite editar el perfil del usuario (jugador o organizador)
 Usuario.updateProfile = function (id, request) {
   return new Promise((resolve, reject) => {
-    leagueJS.Summoner.gettingByName(request.nombre_invocador)
-      .then((summoner) => {
-        request.image = `https://cdn.communitydragon.org/12.3.1/profile-icon/${summoner.profileIconId}`;
+    leagueJS.Summoner.getByName(
+      request.nombre_invocador,
+      apiConstants.Regions.LAT_NORTH
+    )
+      .then(({ response }) => {
+        console.log(response);
+        if (response.profileIconId !== request.profileIconId)
+          throw new Error("El icono de perfil no coincide con el invocador.");
+
+        request.image = `https://cdn.communitydragon.org/12.3.1/profile-icon/${response.profileIconId}`;
         return dbConn
           .promise()
           .query(
             "UPDATE usuarios set nombre = ?, nombre_invocador=?, image=? WHERE id_usuario=?",
-            [request.nombre, request.nombre_invocador, request.image, id]
+            [request.nombre, response.name, request.image, id]
           );
       })
       .then(([fields, rows]) => {
@@ -214,6 +222,22 @@ Usuario.updateProfileImage = function (nombreInvocador, idUsuario) {
       })
       .then(([fields, rows]) => {
         resolve({ message: "Foto de Perfil actualizada", fields });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+// Metodo para encontrar un jugador por puuid de TFT o LOL
+Usuario.findByPuuid = function (puuid) {
+  return new Promise((resolve, reject) => {
+    puuid = "%" + puuid + "%";
+    dbConn
+      .promise()
+      .query("SELECT * FROM usuarios WHERE riot_api like ?", puuid)
+      .then(([fields, rows]) => {
+        resolve(fields[0]);
       })
       .catch((err) => {
         reject(err);

@@ -17,6 +17,7 @@ const Torneos = function (torneo) {
     torneo.no_equipos,
     torneo.no_enfrentamientos
   );
+  this.hora_inicio = torneo.hora_inicio;
   this.privado = torneo.privado;
   this.codigo_torneo = Torneos.generateCode(torneo.nombre);
   this.id_usuario = torneo.id_usuario;
@@ -117,7 +118,7 @@ Torneos.update = function (idTorneo, torneo, oldTorneo, idUsuario) {
           id_torneo: idTorneo,
           id_usuario: idUsuario,
           desc_modificacion:
-            "Se modifico el torneo: " +
+            "Se modificó el torneo: " +
             oldTorneo.nombre +
             " \nCambios realizados: " +
             changesString,
@@ -233,7 +234,7 @@ Torneos.cancel = function (idTorneo, idUsuario, torneo) {
         const newBitacoraTorneo = new BitacoraTorneo({
           id_torneo: idTorneo,
           id_usuario: idUsuario,
-          desc_modificacion: "Se cancelo el torneo: " + torneo.nombre,
+          desc_modificacion: "Se canceló el torneo: " + torneo.nombre,
         });
         await BitacoraTorneo.create(newBitacoraTorneo);
         try {
@@ -276,7 +277,7 @@ Torneos.getInfoEquipos = function (idTorneo) {
     dbConn
       .promise()
       .query(
-        "select j.id_usuario, j.email, j.nombre, j.nombre_invocador, j.image, et.posicion, e.nombre as equipo, e.logo from usuarios as j, usuario_equipo as ue, equipos as e, equipo_torneo as et, torneos as t where t.id_torneo=? and t.id_torneo=et.id_torneo and et.id_equipo=e.id_equipo and e.id_equipo=ue.id_equipo and ue.id_usuario=j.id_usuario;",
+        "select j.id_usuario, j.email, j.nombre, j.nombre_invocador, j.image, et.ganador, e.nombre as equipo, e.logo, e.id_equipo from usuarios as j, usuario_equipo as ue, equipos as e, equipo_torneo as et, torneos as t where t.id_torneo=? and t.id_torneo=et.id_torneo and et.id_equipo=e.id_equipo and e.id_equipo=ue.id_equipo and ue.id_usuario=j.id_usuario;",
         idTorneo
       )
       .then(([fields, rows]) => {
@@ -368,6 +369,55 @@ Torneos.getTorneoByCode = function (code) {
       .query("select * from torneos where codigo_torneo=?", [code])
       .then(([fields, rows]) => {
         resolve(fields[0]);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+Torneos.updateEstado = function (idTorneo, idEstado) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("UPDATE torneos SET `id_estado` = ? WHERE (`id_torneo` = ?);", [
+        idEstado,
+        idTorneo,
+      ])
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+Torneos.updateObjLlave = function (idTorneo, llave) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("UPDATE torneos SET `json_llave` = ? WHERE (`id_torneo` = ?);", [
+        JSON.stringify(llave),
+        idTorneo,
+      ])
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+Torneos.getObjLlave = function (idTorneo) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("select json_llave from torneos where id_torneo=?", [idTorneo])
+      .then(([fields, rows]) => {
+        fields[0].json_llave = JSON.parse(fields[0].json_llave);
+        resolve(fields[0].json_llave);
       })
       .catch((err) => {
         reject(err);

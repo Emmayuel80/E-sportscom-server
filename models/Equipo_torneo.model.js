@@ -6,7 +6,7 @@ const EquipoTorneo = function (equipo) {
   this.id_torneo = equipo.id_torneo;
   this.estado = equipo.estado;
   this.no_equipo = equipo.no_equipo;
-  this.posicion = equipo.posicion;
+  this.ganador = false;
 };
 
 // kick equipo torneo
@@ -80,4 +80,91 @@ EquipoTorneo.getTotalEquipos = (idequipo) => {
   });
 };
 
+EquipoTorneo.getTorneosGanados = (idUsuario) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `select count(*) as total from usuarios as u, usuario_equipo as ue, equipos as e, equipo_torneo as et, torneos as t 
+      where u.id_usuario=? and u.id_usuario=ue.id_usuario and ue.id_equipo=e.id_equipo and e.id_equipo=et.id_equipo and et.id_torneo=t.id_torneo and et.ganador=1 and t.id_estado=3;`,
+        [idUsuario]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields[0].total);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+EquipoTorneo.getTorneosParticipados = (idUsuario) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        `select count(*) as total from usuarios as u, usuario_equipo as ue, equipos as e, equipo_torneo as et, torneos as t 
+      where u.id_usuario=? and u.id_usuario=ue.id_usuario and ue.id_equipo=e.id_equipo and e.id_equipo=et.id_equipo and et.id_torneo=t.id_torneo;`,
+        [idUsuario]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields[0].total);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+// get remaining teams in a tournament
+EquipoTorneo.getEquiposNoEliminados = (idequipo) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select * from equipo_torneo where id_torneo=? and estado=1 order by no_equipo;",
+        idequipo
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+EquipoTorneo.setLoser = (idTorneo, idEquipo) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "UPDATE equipo_torneo SET estado=0 WHERE id_torneo=? AND id_equipo=?",
+        [idTorneo, idEquipo]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+EquipoTorneo.setGanadorTorneo = (idTorneo, idEquipo) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "UPDATE equipo_torneo SET ganador=1 WHERE id_torneo=? AND id_equipo=?",
+        [idTorneo, idEquipo]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
 module.exports = EquipoTorneo;

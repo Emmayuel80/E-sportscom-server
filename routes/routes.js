@@ -150,11 +150,11 @@ router.put("/editProfile", authorize(), (req, res) => {
           });
         })
         .catch((err) => {
-          res.status(400).send(err);
+          res.status(400).send({ error: err.toString() });
         });
     })
     .catch((err) => {
-      res.status(400).send(err);
+      res.status(400).send({ error: err.toString() });
     });
 });
 
@@ -218,26 +218,6 @@ router.post("/verifyEmail/:id/:token", (req, res) => {
         error: false,
         message: "Email verificado!",
       });
-    })
-    .catch((err) => {
-      res.status(400).send(err);
-    });
-});
-
-router.put("/editProfileImage", authorize(), (req, res) => {
-  Usuario.updateProfileImage(req.body.nombre_invocador, req.user.sub)
-    .then((result) => {
-      Usuario.findById(req.user.sub)
-        .then((usuario) => {
-          res.json({
-            error: false,
-            message: "Usuario actualizado!",
-            data: usuario,
-          });
-        })
-        .catch((err) => {
-          res.status(400).send(err);
-        });
     })
     .catch((err) => {
       res.status(400).send(err);
