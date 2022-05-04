@@ -185,7 +185,7 @@ UsuarioEquipo.deletePlayers = function (idEquipo) {
     dbConn
       .promise()
       .query(
-        "delete from usuario_equipo where id_equipo=? and id_usuario in (select id_usuario from usuario_equipo where id_equipo=?)",
+        "delete from usuario_equipo where id_equipo=? and id_usuario in (select id from (select id_usuario as id from usuario_equipo where id_equipo=?) as w)",
         [idEquipo, idEquipo]
       )
       .then(([fields, rows]) => {
