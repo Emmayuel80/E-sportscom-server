@@ -1,21 +1,12 @@
 const express = require("express");
 const http = require("http");
-const https = require("https");
-const fs = require("fs");
+
 const app = express();
 // const routes = require("./routes/routes");
 const logger = require("morgan");
 const cors = require("cors");
 const path = require("path");
 require("dotenv").config();
-
-// SSL
-const privateKey = fs.readFileSync(process.env.SSL_KEY, "UTF8");
-const certificate = fs.readFileSync(process.env.SSL_CERTIFICATE, "UTF8");
-const credentials = {
-  key: privateKey,
-  cert: certificate,
-};
 
 // CONFIG
 app.use(cors());
@@ -57,6 +48,5 @@ const errorResponder = (err, req, res, next) => {
 };
 app.use(errorResponder);
 const httpServer = http.createServer(app);
-const httpsServer = https.createServer(credentials, app);
+
 httpServer.listen(8080);
-httpsServer.listen(8443);
