@@ -163,4 +163,38 @@ UsuarioEquipo.getEquiposDeCapitan = function (idUsuario) {
   });
 };
 
+UsuarioEquipo.getTorneosDelEquipo = function (idUsuario, idEquipo) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select t.* from usuario_equipo as ue, equipos as e, equipo_torneo as et, torneos as t where ue.id_usuario=? and ue.id_equipo=? and ue.id_equipo=e.id_equipo and e.id_equipo=et.id_equipo and et.id_torneo=t.id_torneo and t.id_estado<3;",
+        [idUsuario, idEquipo]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+UsuarioEquipo.deletePlayers = function (idEquipo) {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "delete from usuario_equipo where id_equipo=? and id_usuario in (select id from (select id_usuario as id from usuario_equipo where id_equipo=?) as w)",
+        [idEquipo, idEquipo]
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
 module.exports = UsuarioEquipo;

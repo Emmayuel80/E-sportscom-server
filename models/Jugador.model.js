@@ -40,7 +40,7 @@ Jugador.getTorneoByName = async function (nombre, start, number) {
 Jugador.registerPlayerToTournament = async function (idTorneo, idUsuario) {
   const torneo = await Torneos.getById(idTorneo);
   const usuario = await Usuario.findById(idUsuario);
-  if (!usuario.nombre_invocador)
+  if (!usuario[0].nombre_invocador)
     throw new Error("El usuario no tiene un nombre de invocador registrado.");
   if (torneo.length <= 0) throw new Error("El torneo no existe");
   if (torneo.id_estado > 0)
@@ -342,10 +342,27 @@ Jugador.getEquiposCompletosDeCapitan = async function (idUsuario) {
 Jugador.deletePlayerFromTeam = async function (idJugador, idEquipo) {
   const jugador = await UsuarioEquipo.getEquipoJugador(idJugador, idEquipo);
   if (!jugador) throw new Error("El jugador no existe en el equipo");
-  if (jugador.capitan) throw new Error("El jugador es capitán del equipo");
   // kick the player
   // get team name
   const nombreEquipo = await Equipos.getNombre(idEquipo);
+  // kick everyone if the captain leaves
+  if (jugador.capitan) {
+    const emails = await Equipos.getEmails(idEquipo);
+    require("../services/sendNotifTeam")(
+      emails,
+      emails[0].nombreEquipo,
+      "Se ha eliminado el equipo."
+    );
+    return await UsuarioEquipo.deletePlayers(idEquipo, nombreEquipo);
+  }
+  // check if the team is already in a active tournament
+  const torneosActivos = await UsuarioEquipo.getTorneosDelEquipo(
+    idJugador,
+    idEquipo
+  );
+  console.log(torneosActivos);
+  if (torneosActivos.length > 0)
+    throw new Error("El Equipo esta actualmente en un torneo activo");
   await UsuarioEquipo.delete(idJugador, idEquipo, nombreEquipo, false);
 };
 
