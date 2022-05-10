@@ -240,7 +240,7 @@ UsuarioTorneoTFT.getTorneosParticipados = (idUsuario) => {
     dbConn
       .promise()
       .query(
-        `select count(*) as total from usuarios as u, usuario_torneo_tft as ut, torneos as t
+        `select count(*) as total from usuarios as u, usuario_torneo_TFT as ut, torneos as t
       where u.id_usuario=? and u.id_usuario=ut.id_usuario and ut.id_torneo=t.id_torneo`,
         [idUsuario]
       )
@@ -353,7 +353,7 @@ UsuarioTorneoTFT.getPosicionJugadoresNoEliminados = (idTorneo) => {
     dbConn
       .promise()
       .query(
-        `SELECT ut.*, u.nombre FROM usuario_torneo_tft as ut, usuarios as u where ut.id_torneo=? and ut.eliminado=0 and ut.id_usuario=u.id_usuario order by ut.puntaje_jugador desc, ut.total_damage desc;`,
+        `SELECT ut.*, u.nombre FROM usuario_torneo_TFT as ut, usuarios as u where ut.id_torneo=? and ut.eliminado=0 and ut.id_usuario=u.id_usuario order by ut.puntaje_jugador desc, ut.total_damage desc;`,
         [idTorneo]
       )
       .then(([fields, rows]) => {
@@ -388,7 +388,7 @@ UsuarioTorneoTFT.getRiotApiPlayerByTournament = async (idTorneo) => {
     dbConn
       .promise()
       .query(
-        `select id_usuario, nombre, image, riot_api from usuarios where id_usuario in (SELECT id_usuario FROM usuario_torneo_tft where id_torneo=?);`,
+        `select id_usuario, nombre, image, riot_api from usuarios where id_usuario in (SELECT id_usuario FROM usuario_torneo_TFT where id_torneo=?);`,
         [idTorneo]
       )
       .then(([fields, rows]) => {
