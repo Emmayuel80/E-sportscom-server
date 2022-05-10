@@ -222,7 +222,7 @@ UsuarioTorneoTFT.getTorneosGanados = (idUsuario) => {
     dbConn
       .promise()
       .query(
-        `select count(*) as total from usuarios as u, usuario_torneo_tft as ut, torneos as t
+        `select count(*) as total from usuarios as u, usuario_torneo_TFT as ut, torneos as t
     where u.id_usuario=? and u.id_usuario=ut.id_usuario and ut.id_torneo=t.id_torneo and t.id_estado=3 and ut.posicion=1`,
         [idUsuario]
       )
@@ -336,7 +336,7 @@ UsuarioTorneoTFT.getPosicionJugadores = (idTorneo) => {
     dbConn
       .promise()
       .query(
-        `SELECT * FROM usuario_torneo_tft where id_torneo=? order by puntaje_jugador asc, total_damage desc;`,
+        `SELECT * FROM usuario_torneo_TFT where id_torneo=? order by puntaje_jugador asc, total_damage desc;`,
         [idTorneo]
       )
       .then(([fields, rows]) => {
@@ -370,7 +370,7 @@ UsuarioTorneoTFT.eliminarJugador = async (idTorneo, idUsuario) => {
     dbConn
       .promise()
       .query(
-        `UPDATE usuario_torneo_tft SET eliminado=1 WHERE id_torneo = ? AND id_usuario = ?`,
+        `UPDATE usuario_torneo_TFT SET eliminado=1 WHERE id_torneo = ? AND id_usuario = ?`,
         [idTorneo, idUsuario]
       )
       .then(([fields, rows]) => {
