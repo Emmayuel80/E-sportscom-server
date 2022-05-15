@@ -78,7 +78,6 @@ module.exports = async function () {
         });
 
         elimination.startEvent();
-        console.log("Torneo", elimination);
         const organizador = await Usuario.findById(torneo.id_usuario);
         for (let i = 0; i < elimination.matches.length; i++) {
           const match = elimination.matches[i];

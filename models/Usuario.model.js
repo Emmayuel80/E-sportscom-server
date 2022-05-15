@@ -3,8 +3,10 @@ const bcrypt = require("bcrypt");
 const saltRounds = 5;
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
-const leagueJS = require("../config/riotApi");
 const apiConstants = require("twisted").Constants;
+const leagueApi = require("../config/riotApi");
+const tftApi = require("../config/tftApi");
+
 // Usuario object create
 const Usuario = function (usuario) {
   this.nombre = usuario.username;
@@ -103,25 +105,66 @@ Usuario.findAll = function () {
 };
 
 // Permite editar el perfil del usuario (jugador o organizador)
-Usuario.updateProfile = function (id, request) {
-  return new Promise((resolve, reject) => {
-    leagueJS.Summoner.getByName(
+Usuario.updateProfile = async function (id, request) {
+  const usuario = await Usuario.findById(id);
+
+  if (
+    usuario[0]?.nombre_invocador?.toLowerCase() !==
+    request.nombre_invocador.toLowerCase()
+  ) {
+    const summonerLOL = await leagueApi.Summoner.getByName(
       request.nombre_invocador,
       apiConstants.Regions.LAT_NORTH
-    )
-      .then(({ response }) => {
-        console.log(response);
-        if (response.profileIconId !== request.profileIconId)
-          throw new Error("El icono de perfil no coincide con el invocador.");
+    );
+    if (summonerLOL.response.profileIconId !== request.profileIconId) {
+      throw new Error("El icono de perfil no coincide con el invocador.");
+    }
+    const summonerLeagueLOL = await leagueApi.League.bySummoner(
+      summonerLOL.response.id,
+      apiConstants.Regions.LAT_NORTH
+    );
+    const masteryLOL = await leagueApi.Champion.masteryBySummoner(
+      summonerLOL.response.id,
+      apiConstants.Regions.LAT_NORTH
+    );
+    const summonerTFT = await tftApi.Summoner.getByName(
+      request.nombre_invocador,
+      apiConstants.Regions.LAT_NORTH
+    );
+    const summonerLeagueTFT = await tftApi.League.get(
+      summonerTFT.response.id,
+      apiConstants.Regions.LAT_NORTH
+    );
+    const data = {
+      summonerLevel: summonerLOL.response.summonerLevel,
+      idLOL: summonerLOL.response.id,
+      idTFT: summonerTFT.response.id,
+      puuidLOL: summonerLOL.response.puuid,
+      puuidTFT: summonerTFT.response.puuid,
+      leagueTFT: summonerLeagueTFT.response,
+      leagueLOL: summonerLeagueLOL.response,
+      masteryLOL: [
+        masteryLOL.response[0],
+        masteryLOL.response[1],
+        masteryLOL.response[2],
+      ],
+    };
+    const image = `https://cdn.communitydragon.org/12.3.1/profile-icon/${summonerLOL.response.profileIconId}`;
+    await dbConn
+      .promise()
+      .query(
+        `UPDATE usuarios SET nombre_invocador=?,riot_api=?, image=? WHERE id_usuario = ?`,
+        [summonerLOL.response.name, JSON.stringify(data), image, id]
+      );
+  }
 
-        request.image = `https://cdn.communitydragon.org/12.3.1/profile-icon/${response.profileIconId}`;
-        return dbConn
-          .promise()
-          .query(
-            "UPDATE usuarios set nombre = ?, nombre_invocador=?, image=? WHERE id_usuario=?",
-            [request.nombre, response.name, request.image, id]
-          );
-      })
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query("UPDATE usuarios set nombre = ? WHERE id_usuario=?", [
+        request.nombre,
+        id,
+      ])
       .then(([fields, rows]) => {
         resolve({ message: "Perfil actualizado", fields });
       })
@@ -210,7 +253,7 @@ Usuario.updateIsActive = function (id, isActive) {
 // Permite actualizar la foto de perfil del usuario (jugador o organizador)
 Usuario.updateProfileImage = function (nombreInvocador, idUsuario) {
   return new Promise((resolve, reject) => {
-    leagueJS.Summoner.gettingByName(nombreInvocador)
+    leagueApi.Summoner.gettingByName(nombreInvocador)
       .then((summoner) => {
         const image = `https://cdn.communitydragon.org/12.3.1/profile-icon/${summoner.profileIconId}`;
         return dbConn

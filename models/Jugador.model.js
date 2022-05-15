@@ -88,7 +88,7 @@ Jugador.registerPlayerToTournament = async function (idTorneo, idUsuario) {
 };
 
 Jugador.getActiveTournaments = async function (idUsuario, start, number) {
-  const torneosTFT = await UsuarioTorneoTFT.getAllfromUsuario(idUsuario);
+  const torneosTFT = await UsuarioTorneoTFT.getAllActivosfromUsuario(idUsuario);
   const [fields] = await dbConn
     .promise()
     .query(
@@ -103,8 +103,6 @@ Jugador.getActiveTournaments = async function (idUsuario, start, number) {
     torneos: torneos.slice(start, start + number),
     total: torneosTFT.length + fields.length,
   };
-  if (data.torneos.length <= 0)
-    throw new Error("No se encontraron torneos activos");
   return data;
 };
 
@@ -224,8 +222,6 @@ Jugador.getTournamentsHistory = async function (idUsuario, start, number) {
     torneos: torneos.slice(start, start + number),
     total: torneosTFT.length + fields.length,
   };
-  if (data.torneos.length <= 0)
-    throw new Error("No se encontraron torneos activos");
   return data;
 };
 
@@ -360,7 +356,6 @@ Jugador.deletePlayerFromTeam = async function (idJugador, idEquipo) {
     idJugador,
     idEquipo
   );
-  console.log(torneosActivos);
   if (torneosActivos.length > 0)
     throw new Error("El Equipo esta actualmente en un torneo activo");
   await UsuarioEquipo.delete(idJugador, idEquipo, nombreEquipo, false);
@@ -396,12 +391,10 @@ Jugador.actualizarRiotApi = async function (idUsuario) {
     usuario[0].nombre_invocador,
     apiConstants.Regions.LAT_NORTH
   );
-  console.log(summonerLOL);
   const summonerLeagueLOL = await leagueApi.League.bySummoner(
     summonerLOL.response.id,
     apiConstants.Regions.LAT_NORTH
   );
-  console.log(summonerLeagueLOL);
   const masteryLOL = await leagueApi.Champion.masteryBySummoner(
     summonerLOL.response.id,
     apiConstants.Regions.LAT_NORTH
@@ -414,7 +407,6 @@ Jugador.actualizarRiotApi = async function (idUsuario) {
     summonerTFT.response.id,
     apiConstants.Regions.LAT_NORTH
   );
-  console.log(summonerLeagueTFT);
   const data = {
     summonerLevel: summonerLOL.response.summonerLevel,
     idLOL: summonerLOL.response.id,
@@ -437,7 +429,10 @@ Jugador.actualizarRiotApi = async function (idUsuario) {
       image,
       idUsuario,
     ]);
-  return data;
+
+  const newUsuario = await Usuario.findById(idUsuario);
+
+  return newUsuario[0];
 };
 
 // get enfrentamientos TFT pendientes de jugar
@@ -515,16 +510,28 @@ Jugador.registerTFTMatch = async function (idUsuario, idEnfrentamiento) {
       }
     }
   });
-  // console.log(enfrentamiento);
   enfrentamiento.json_resultado = JSON.stringify(matchFound);
   EnfrentamientoTft.update(idEnfrentamiento, enfrentamiento, torneo);
   // Codigo de hoy
-  // console.log(enfrentamiento.json_data.players);
   enfrentamientoJson.players.sort((a, b) => {
-    return a.riot_api.puuidTFT - b.riot_api.puuidTFT;
+    if (a.riot_api.puuidTFT < b.riot_api.puuidTFT) {
+      return -1;
+    } else if (a.riot_api.puuidTFT > b.riot_api.puuidTFT) {
+      return 1;
+    } else {
+      return 0;
+    }
+    // return a.riot_api.puuidTFT - b.riot_api.puuidTFT;
   });
   matchFound.info.participants.sort((a, b) => {
-    return a.puuid - b.puuid;
+    if (a.puuid < b.puuid) {
+      return -1;
+    } else if (a.puuid > b.puuid) {
+      return 1;
+    } else {
+      return 0;
+    }
+    // return a.puuid - b.puuid;
   });
   for (let i = 0; i < enfrentamientoJson.players.length; i++) {
     await UsuarioTorneoTFT.update(

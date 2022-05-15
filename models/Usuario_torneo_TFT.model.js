@@ -200,12 +200,29 @@ UsuarioTorneoTFT.kickParticipante = (
   });
 };
 
-UsuarioTorneoTFT.getAllfromUsuario = (idUsuario) => {
+UsuarioTorneoTFT.getAllActivosfromUsuario = (idUsuario) => {
   return new Promise((resolve, reject) => {
     dbConn
       .promise()
       .query(
         "select t.* from torneos as t where t.id_estado <=2 and t.id_torneo in (select ut.id_torneo from usuario_torneo_TFT as ut, usuarios as u where u.id_usuario = ? and u.id_usuario=ut.id_usuario);",
+        idUsuario
+      )
+      .then(([fields, rows]) => {
+        resolve(fields);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+UsuarioTorneoTFT.getAllfromUsuario = (idUsuario) => {
+  return new Promise((resolve, reject) => {
+    dbConn
+      .promise()
+      .query(
+        "select t.* from torneos as t where t.id_torneo in (select ut.id_torneo from usuario_torneo_TFT as ut, usuarios as u where u.id_usuario = ? and u.id_usuario=ut.id_usuario);",
         idUsuario
       )
       .then(([fields, rows]) => {
@@ -279,7 +296,7 @@ UsuarioTorneoTFT.update = async (idTorneo, idUsuario, riotApi) => {
         `UPDATE usuario_torneo_TFT SET puntaje_jugador=?, no_enfrentamientos_jugados=?, total_damage=? WHERE id_torneo = ? AND id_usuario = ?`,
         [
           jugador[0].puntaje_jugador + (9 - riotApi.placement),
-          jugador[0].no_enfrentamientos_jugados++,
+          jugador[0].no_enfrentamientos_jugados + 1,
           jugador[0].total_damage + riotApi.total_damage_to_players,
           idTorneo,
           idUsuario,

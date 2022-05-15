@@ -4,7 +4,10 @@ const Torneos = function (torneo) {
   this.nombre = torneo.nombre;
   this.id_juego = torneo.id_juego;
   this.no_equipos = torneo.no_equipos;
-  this.no_enfrentamientos = torneo.no_enfrentamientos;
+  this.no_enfrentamientos = Torneos.calculateNoEnfrentamientos(
+    torneo.no_equipos,
+    torneo.id_juego
+  );
   this.fecha_fin_registro = torneo.fecha_fin_registro;
   this.fecha_inicio = torneo.fecha_inicio;
   this.fecha_creacion = new Date();
@@ -41,6 +44,24 @@ Torneos.calculateEtapaActual = function (
     }
   } else if (noEnfrentamientos) {
     return 5;
+  }
+};
+
+Torneos.calculateNoEnfrentamientos = function (noEquipos, idJuego) {
+  noEquipos = parseInt(noEquipos);
+  idJuego = parseInt(idJuego);
+  if (idJuego === 1) {
+    let aux = noEquipos;
+    let noPartidas = 0;
+    while (aux !== 1) {
+      aux = aux / 2;
+      noPartidas = noPartidas + aux;
+    }
+    return noPartidas;
+  } else if (idJuego === 2) {
+    if (noEquipos === 8) {
+      return 4;
+    } else return (noEquipos / 8) * 2;
   }
 };
 // generate tournament code
@@ -208,7 +229,7 @@ Torneos.getTorneosActivos = function (idUsuario, countTournamets = false) {
       .query(
         `select ${
           countTournamets ? "count(*) as numero" : "*"
-        } from torneos where id_usuario = ? and id_estado != 5 and id_estado != 4`,
+        } from torneos where id_usuario = ? and id_estado != 3 and id_estado != 4`,
         [idUsuario]
       )
       .then(([fields, rows]) => {

@@ -115,6 +115,10 @@ router.get(
           ...torneo,
           participantes: await Torneos.getInfoEquipos(idTorneo),
           partidas: partidas,
+          organizador: {
+            nombre: organizador[0].nombre,
+            email: organizador[0].email,
+          },
         };
       } else if (torneo.id_juego === 2) {
         // TFT
@@ -124,7 +128,10 @@ router.get(
         data = {
           ...torneo,
           participantes: participantes,
-          organizador: organizador[0].nombre,
+          organizador: {
+            nombre: organizador[0].nombre,
+            email: organizador[0].email,
+          },
         };
       }
 

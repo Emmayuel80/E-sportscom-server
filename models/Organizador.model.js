@@ -48,9 +48,7 @@ Organizador.getTorneosCreados = async function (idUsuario, start, end) {
     torneos: torneos,
     total: total[0],
   };
-  if (data.torneos.length <= 0) {
-    throw new Error("No se encontraron torneos creados");
-  } else return data;
+  return data;
 };
 
 Organizador.getTournamentData = async function (idTorneo, idUsuario) {
@@ -115,7 +113,6 @@ Organizador.kickPlayerOrTeam = async function (idTorneo, idUsuario, kickId) {
 
 Organizador.registrarResultadoLOL = async function (idPartida, idGanador) {
   const partida = await PartidaLol.getPartidaById(idPartida);
-  console.log(partida);
   if (partida.id_equipo1 === idGanador || partida.id_equipo2 === idGanador) {
     const loser =
       partida.id_equipo1 === idGanador
