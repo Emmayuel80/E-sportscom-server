@@ -205,7 +205,7 @@ UsuarioTorneoTFT.getAllfromUsuario = (idUsuario) => {
     dbConn
       .promise()
       .query(
-        "select t.* from torneos as t where t.id_estado <=3 and t.id_torneo in (select ut.id_torneo from usuario_torneo_TFT as ut, usuarios as u where u.id_usuario = ? and u.id_usuario=ut.id_usuario);",
+        "select t.* from torneos as t where t.id_estado <=2 and t.id_torneo in (select ut.id_torneo from usuario_torneo_TFT as ut, usuarios as u where u.id_usuario = ? and u.id_usuario=ut.id_usuario);",
         idUsuario
       )
       .then(([fields, rows]) => {
